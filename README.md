@@ -8,25 +8,43 @@
 
 ## 1.2 项目
 
-这是我对 LearnOpenGL 所做的项目，内容基于教程，代码为自行编写
+这是我对 LearnOpenGL 所做的练习
 
-目录结构与教程也略有不同，现工程目录如下
+内容基于教程，代码为自行编写，主要目标为面向对象编程
+
+目录结构与教程略有不同，现工程目录如下
 
 ```
 \LearnOpenGL
-	\01_Introduction
-		-01_CreateWindow
+  \01_Introduction
+    -01_CreateWindow
+    -02_Triangle
+  \LIBs
+    -glad
+    -Glfw
+    -Shader
+    -Utility
 ```
-
-
 
 # 2. 使用方法
 
+### 2.1 下载数据文件
+
+```
+链接：https://pan.baidu.com/s/1TQOqNW7gNLE8Uxhl34hLWg 
+提取码：ahmx
+```
+
+放在根目录下
+
+### 2.2 建立工程
+
 ```bash
+mkdir build
 cd build
 cmake ..
 ```
 
 打开 `build/LearnOpenGL.sln`，找到 `INSTALL` 项目，右键点击“生成”。
 
-生成的`exe`会在`bin`中，生成的`lib`会在 `lib/Gen `中
+生成的`exe`和对应的`fs`、`vs`会在`bin`中，生成的`lib`会在 `lib/Gen `中

@@ -1,5 +1,8 @@
 #include <GLFW/Glfw.h>
 
+using namespace LOGL;
+using namespace std;
+
 Glfw::Glfw():window(NULL){ }
 //------------
 void Glfw::Init(size_t width, size_t height, char * title){
@@ -26,7 +29,7 @@ void Glfw::Run() {
 }
 //------------
 Glfw* Glfw::instance = new Glfw();
-Glfw* Glfw::Instance(){ return instance; }
+Glfw* Glfw::GetInstance(){ return instance; }
 //------------
 void Glfw::CB_FrameBuffSize(GLFWwindow* window, int width, int height){
 	glViewport(0, 0, width, height);

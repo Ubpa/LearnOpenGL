@@ -78,8 +78,19 @@ namespace Ubpa{
 			return "";
 		}
 		char buffer[1024];
-		Scanf("%s\n", buffer);
+		fgets(buffer, 1024, pF);
 		return buffer;
+	}
+
+	string File::ReadAll() {
+		if (Check(READ)) {
+			fprintf(stderr, "file can't not read\n");
+			return "";
+		}
+		string rst;
+		while (!feof(pF))
+			rst += ReadLine();
+		return rst;
 	}
 	
 	string File::ModeToStr(Mode mode) {

@@ -36,6 +36,7 @@ namespace Ubpa{
 		int Scanf(char * format, ...);
 
 		std::string ReadLine();
+		std::string ReadAll();
 
 	private:
 		std::string ModeToStr(Mode mode);

@@ -10,7 +10,7 @@ macro(SETUP_PROJECT MODE TARGET_PARTNAME STR_TARGET_SOURCES STR_TARGET_LIBS)
 	else()
 		if(${MODE} STREQUAL "EXE")
 			add_executable( ${TARGET_NAME} ${LIST_TARGET_SOURCES})
-			set(INSTALL_DIR "bin/${FOLDER_NAME}")
+			set(INSTALL_DIR "bin/${FOLDER_NAME}/${TARGET_PARTNAME}")
 		elseif(${MODE} STREQUAL "LIB")
 			add_library(${TARGET_NAME} ${LIST_TARGET_SOURCES})
 			set(INSTALL_DIR "lib/Gen")
@@ -22,9 +22,7 @@ macro(SETUP_PROJECT MODE TARGET_PARTNAME STR_TARGET_SOURCES STR_TARGET_LIBS)
 			if( NOT ${FOLDER_NAME} STREQUAL " ")
 				SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES FOLDER ${FOLDER_NAME})
 			endif()
-			if(${STR_TARGET_LIBS} STREQUAL " ")
-				message(STATUS "Target [${TARGET_NAME}] has no libs")
-			else()
+			if(NOT ${STR_TARGET_LIBS} STREQUAL " ")
 				target_link_libraries( ${TARGET_NAME} ${LIST_TARGET_LIBS} )
 			endif()
 			install (TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_DIR})
@@ -55,7 +53,8 @@ endmacro(GET_DIR_NAME DIRNAME)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
+cmake_policy(VERSION 2.8)
 project (${PROJECT_NAME})
 
 # The version number.
@@ -65,8 +64,11 @@ set (${PROJECT_NAME}_VERSION_MINOR 0)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
+configure_file(config/ROOT_PATH.h.in config/ROOT_PATH.h)
+message(STATUS "${CMAKE_BINARY_DIR}/config")
 include_directories (
 	${PROJECT_SOURCE_DIR}/include
+	${CMAKE_BINARY_DIR}/config
 	# $ENV{XXX_INCLUDE_PATH}
 	# ...
 )
