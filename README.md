@@ -15,15 +15,18 @@
 目录结构与教程略有不同，现工程目录如下
 
 ```
-\LearnOpenGL
-  \01_Introduction
+/LearnOpenGL
+  /01_Introduction
     -01_CreateWindow
     -02_Triangle
-  \LIBs
+  /LIBs
+    /Utility
+      -ArgManager
+      -File
+      -Operation
     -glad
     -Glfw
     -Shader
-    -Utility
 ```
 
 # 2. 使用方法
@@ -45,6 +48,9 @@ cd build
 cmake ..
 ```
 
-打开 `build/LearnOpenGL.sln`，找到 `INSTALL` 项目，右键点击“生成”。
+打开 `/build/LearnOpenGL.sln`，找到 `INSTALL` 项目，右键点击“生成”。
 
-生成的`exe`和对应的`fs`、`vs`会在`bin`中，生成的`lib`会在 `lib/Gen `中
+- 生成的`exe`会在`/bin`中
+
+- 生成的`lib`会在 `/lib/Gen `中
+- `*.fs`、`*.vs`会从`/src`中拷贝到`/data`中
