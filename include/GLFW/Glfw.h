@@ -2,6 +2,7 @@
 #define GLFW_H_
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <Utility\Operation.h>
 #include <iostream>
 
 namespace LOGL {
@@ -11,8 +12,11 @@ namespace LOGL {
 		//------------
 		void Init(size_t width = 800, size_t height = 600, char * title = "Title");
 		void Terminate();
-		void SetCB_FrameBuffSize();
+		//void SetCB_FrameBuffSize();
+		template<typename T>
+		void Run(T* operation = NULL);
 		void Run();
+		GLFWwindow * GetWindow();
 	private:
 		Glfw();
 		Glfw(const Glfw&);
@@ -25,5 +29,17 @@ namespace LOGL {
 		GLFWwindow * window;
 		static Glfw * instance;
 	};
+
+	template<typename T>
+	void Glfw::Run(T * operation) {
+		if (window == NULL)
+			Init();
+		while (!glfwWindowShouldClose(window))
+		{
+			if (operation != NULL)
+				(*operation)();
+		}
+	}
 }
+
 #endif

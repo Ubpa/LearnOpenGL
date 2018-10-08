@@ -1,4 +1,5 @@
 #include <Shader.h>
+#include <string>
 
 using namespace std;
 using namespace LOGL;
@@ -53,9 +54,10 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 size_t Shader::GetID() const { return ID; }
 bool Shader::IsValid() const { return valid; }
 
-void Shader::Use() {
+bool Shader::Use() {
 	if (valid)
 		glUseProgram(ID);
+	return valid;
 }
 
 void Shader::SetBool(const std::string &name, bool value) const{

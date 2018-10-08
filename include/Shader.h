@@ -1,21 +1,20 @@
 #ifndef SHADER_H_
 #define SHADER_H_
 
-#include <string>
 #include <GLFW/Glfw.h>
-#include <Ubpa/Utility.h>
+#include <Utility/File.h>
 
 namespace LOGL {
 	class Shader{
 	public:
 		// constructor generates the shader on the fly
-		Shader(const char* vertexPath, const char* fragmentPath);
+		Shader(const char * vertexPath, const char * fragmentPath);
 
 		size_t GetID() const;
 		bool IsValid() const;
 
 		// activate the shader
-		void Use();
+		bool Use();
 
 		// utility uniform functions
 		void SetBool(const std::string &name, bool value) const;

@@ -1,11 +1,13 @@
 #include <GLFW/Glfw.h>
 
+using namespace LOGL;
+
 int main(int argc, char ** argv) {
 	size_t width = 800, height = 600;
 	char title[] = "01_CreateWindow";
-	Glfw::Instance()->Init(width, height, title);
+	Glfw::GetInstance()->Init(width, height, title);
 	//------------
-	Glfw::Instance()->Run();
-	Glfw::Instance()->Terminate();
+	Glfw::GetInstance()->Run();
+	Glfw::GetInstance()->Terminate();
 	return 0;
 }

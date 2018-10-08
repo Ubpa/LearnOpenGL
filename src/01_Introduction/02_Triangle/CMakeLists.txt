@@ -1,6 +1,6 @@
 #默认使用目录名作为项目名
 GET_DIR_NAME(DIRNAME)
-set(TARGET_PARTNAME ${DIRNAME})
+set(TARGET_NAME ${DIRNAME})
 #多个源文件用 [空格] 分隔
 #如：set(STR_TARGET_SOURCES "main.cpp src_2.cpp")
 file(GLOB ALL_SOURCES
@@ -18,7 +18,7 @@ endforeach(SOURCE ${ALL_SOURCES})
 #如：set(STR_TARGET_LIBS "lib1.lib lib2.lib")
 set(STR_TARGET_LIBS "glfw3.lib glad Glfw Shader opengl32.lib")
 
-SETUP_PROJECT(${MODE} ${TARGET_PARTNAME} ${STR_TARGET_SOURCES} ${STR_TARGET_LIBS})
+SETUP_PROJECT(${MODE} ${TARGET_NAME} ${STR_TARGET_SOURCES} ${STR_TARGET_LIBS})
 
 # copy shader files to build directory
 file(GLOB SHADERS
@@ -28,6 +28,6 @@ file(GLOB SHADERS
 )
 
 foreach(SHADER ${SHADERS})
-	add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} $<TARGET_FILE_DIR:${TARGET_NAME}>)
-	install (FILES ${SHADER} DESTINATION "bin/${FOLDER_NAME}/${DIRNAME}")
+	string(REGEX MATCH "([^/]*)$" TMP ${SHADER})
+	add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} "${CMAKE_SOURCE_DIR}/data/shaders/${FOLDER_NAME}/${DIRNAME}/${TMP}")
 endforeach(SHADER)
