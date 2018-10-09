@@ -18,8 +18,18 @@ void Glfw::Init(size_t width, size_t height, char * title){
 	glViewport(0, 0, width, height);
 }
 void Glfw::Terminate() { glfwTerminate(); }
-void Glfw::Run(){ Run<Ubpa::Operation>(NULL); }
 GLFWwindow * Glfw::GetWindow() { return window; }
+void Glfw::Run(Ubpa::Operation * operation) {
+	if (window == NULL)
+		Init();
+	while (!glfwWindowShouldClose(window))
+	{
+		if (operation != NULL)
+			(*operation)();
+	}
+}
+int Glfw::GetKey(int key) { return glfwGetKey(window, key); }
+void Glfw::CloseWindow() { glfwSetWindowShouldClose(window, true); }
 //------------
 Glfw* Glfw::instance = new Glfw();
 Glfw* Glfw::GetInstance(){ return instance; }

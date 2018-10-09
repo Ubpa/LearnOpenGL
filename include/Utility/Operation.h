@@ -1,20 +1,32 @@
 #ifndef _OPERATION_H_
 #define _OPERATION_H_
 
-#include<vector>
+#include<queue>
+#include<functional>
 
 namespace Ubpa{
 	class Operation{
 	public:
 		Operation(bool isHold);
 		bool IsHold();
+		void Run();
 		virtual void operator()() = 0;
 		virtual ~Operation();
-	private:
+	protected:
 		bool isHold;
 	};
 
-	class OperationVec : public std::vector<Operation>{
+	class LambdaOperation : public Operation{
+	public:
+		LambdaOperation(std::function<void()> operation, bool isHold = false);
+		void operator()() { operation(); };
+	private:
+		std::function<void()> operation;
+	};
+
+	class OperationQueue : public std::queue<Operation *>, public Operation {
+	public:
+		OperationQueue(bool isHold = false);
 		void operator()();
 	};
 };
