@@ -20,6 +20,7 @@ namespace LOGL {
 		void SetBool(const std::string &name, bool value) const;
 		void SetInt(const std::string &name, int value) const;
 		void SetFloat(const std::string &name, float value) const;
+		void SetVec3f(const std::string &name, float value0, float value1, float value2) const;
 		void SetVec4f(const std::string &name, float value0, float value1, float value2, float value3) const;
 	private:
 		// utility function for checking shader compilation/linking errors.

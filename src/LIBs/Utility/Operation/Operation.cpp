@@ -13,6 +13,8 @@ void Operation::Run() { this->operator()(); }
 LambdaOperation::LambdaOperation(function<void()> operation, bool isHold)
 	: Operation(isHold), operation(operation) { }
 
+void LambdaOperation::operator()() { operation(); };
+
 OperationQueue::OperationQueue(bool isHold)
 	: Operation(isHold) { }
 

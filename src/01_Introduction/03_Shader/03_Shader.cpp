@@ -26,9 +26,10 @@ int main(int argc, char ** argv) {
 		-0.5f, 0.5f, 0.0f,   // 左上角
 	};
 	float vertices1[] = {
-		-0.5f, -0.5f, 0.0f, // 左下角
-		-0.5f, 0.5f, 0.0f,   // 左上角
-		-1.0f, 0.0f, 0.0f   // 左
+		//位置				 //颜色
+		-0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // 左下角
+		-0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // 左上角
+		-1.0f,  0.0f, 0.0f,  0.0f, 0.0f, 1.0f  // 左
 	};
 	size_t indices[] = { // 注意索引从0开始! 
 		0, 1, 3, // 第一个三角形
@@ -71,16 +72,20 @@ int main(int argc, char ** argv) {
 	glBindVertexArray(VAO[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), NULL);
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	// 颜色属性
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	//------------ 5. 编译着色器
-	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/02_Triangle/";
-	string vsF = prefix + "02_Triangle.vs";
-	string fsRedF = prefix + "02_Triangle_Red.fs";
+	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/03_Shader/";
+	string vsF = prefix + "03_Shader.vs";
+	string fsF = prefix + "03_Shader.fs";
 	//string fsBlueF = prefix + "02_Triangle_Blue.fs";
-	Shader shaderRed(vsF.c_str(), fsRedF.c_str());
+	Shader shader(vsF.c_str(), fsF.c_str());
 	//Shader shaderBlue(vsF.c_str(), fsBlueF.c_str());
-	if (!shaderRed.IsValid() /*|| !shaderBlue.IsValid()*/) {
+	if (!shader.IsValid() /*|| !shaderBlue.IsValid()*/) {
 		cout << "Shader is not Valid\n";
 		return 1;
 	}
@@ -88,11 +93,14 @@ int main(int argc, char ** argv) {
 	LambdaOperation processInputOp(processInput, true);
 
 	LambdaOperation renderOp([&]() {
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		//------------ Red
+		//------------ 
 		glBindVertexArray(VAO[0]);
-		shaderRed.Use();
+		shader.Use();
+		float greenValue = (sinf(5.0f*glfwGetTime()) / 2.0f) + 0.5f;
+		shader.SetVec4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
+		shader.SetVec3f("offset", sinf(5.0f*glfwGetTime()) * 0.5f, 0, 0);
 		/*
 		* @1 绘制模式
 		* @2 绘制的顶点个数
@@ -100,9 +108,8 @@ int main(int argc, char ** argv) {
 		* @4 偏移量
 		*/
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-		//------------ Blue
+		//------------
 		glBindVertexArray(VAO[1]);
-		//shaderBlue.Use();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//------------ 交换缓冲
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());

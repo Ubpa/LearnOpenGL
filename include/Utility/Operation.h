@@ -19,7 +19,7 @@ namespace Ubpa{
 	class LambdaOperation : public Operation{
 	public:
 		LambdaOperation(std::function<void()> operation, bool isHold = false);
-		void operator()() { operation(); };
+		void operator()();
 	private:
 		std::function<void()> operation;
 	};
