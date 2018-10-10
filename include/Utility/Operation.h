@@ -7,8 +7,9 @@
 namespace Ubpa{
 	class Operation{
 	public:
-		Operation(bool isHold);
+		Operation(bool isHold = true);
 		bool IsHold();
+		void SetIsHold(bool isHold);
 		void Run();
 		virtual void operator()() = 0;
 		virtual ~Operation();
@@ -18,7 +19,7 @@ namespace Ubpa{
 
 	class LambdaOperation : public Operation{
 	public:
-		LambdaOperation(std::function<void()> operation, bool isHold = false);
+		LambdaOperation(const std::function<void()> & operation, bool isHold = true);
 		void operator()();
 	private:
 		std::function<void()> operation;
@@ -26,8 +27,12 @@ namespace Ubpa{
 
 	class OperationQueue : public std::queue<Operation *>, public Operation {
 	public:
-		OperationQueue(bool isHold = false);
+		OperationQueue(bool isHold = true);
+		void push(Operation &);
+		OperationQueue & operator<<(Operation & operation);
 		void operator()();
+	private:
+		using std::queue<Operation *>::push;
 	};
 };
 #endif//! _FILE_H_

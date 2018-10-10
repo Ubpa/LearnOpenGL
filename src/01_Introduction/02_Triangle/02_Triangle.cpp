@@ -104,20 +104,21 @@ int main(int argc, char ** argv) {
 		glBindVertexArray(VAO[1]);
 		shaderBlue.Use();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//------------ 交换缓冲
-		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
-		//------------ 拉取事件
-		glfwPollEvents();
 	}, true);
 
-	OperationQueue opQueue(true);
-	opQueue.push(&processInputOp);
-	opQueue.push(&renderOp);
+	LambdaOperation endOp([]() {
+		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
+		glfwPollEvents();
+	});
+
+	OperationQueue opQueue;
+	opQueue.push(processInputOp);
+	opQueue.push(renderOp);
+	opQueue.push(endOp);
 	//------------
-	Glfw::GetInstance()->Run(&opQueue);
+	Glfw::GetInstance()->Run(opQueue);
 	//------------
 	Glfw::GetInstance()->Terminate();
-	//------------
 	return 0;
 }
 

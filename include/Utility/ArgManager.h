@@ -1,5 +1,5 @@
-#ifndef _ARGMANAGER_H_
-#define _ARGMANAGER_H_
+#ifndef _ARG_MANAGER_H_
+#define _ARG_MANAGER_H_
 
 #include <string>
 #include <vector>
@@ -15,4 +15,4 @@ namespace Ubpa{
 		std::map<std::string, std::vector<std::string>> pairs;
 	};
 };
-#endif//! _ARGMANAGER_H_
+#endif//! _ARG_MANAGER_H_

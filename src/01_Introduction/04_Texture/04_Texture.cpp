@@ -15,8 +15,8 @@ int main(int argc, char ** argv) {
 		<< "* 2. Press '2' to set PolygonMode[LINE] *" << endl
 		<< "*****************************************" << endl;
 	//------------
-	size_t width = 800, height = 600;
-	char title[] = "03_Shader";
+	size_t width = 1024, height = 768;
+	char title[] = "04_Texture";
 	Glfw::GetInstance()->Init(width, height, title);
 	//------------
 	float vertices0[] = {
@@ -35,40 +35,34 @@ int main(int argc, char ** argv) {
 		0, 1, 3, // 第一个三角形
 		1, 2, 3  // 第二个三角形
 	};
-	float texCoords[] = {
-	0.0f, 0.0f, // 左下角
-	1.0f, 0.0f, // 右下角
-	0.5f, 1.0f // 上中
-	};
-	//------------ 0. 生成 VBO , VAO 和 EBO
+	//------------
 	size_t VBO[2];
 	glGenBuffers(2, VBO);
 	size_t VAO[2];
 	glGenVertexArrays(2, VAO);
 	size_t EBO;
 	glGenBuffers(1, &EBO);
-	//------------ 1. 绑定 VAO
+	//------------
 	glBindVertexArray(VAO[0]);
-	//------------ 2. 绑定 VBO, 将顶点数据送到 VBO 中
+	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices0), vertices0, GL_STATIC_DRAW);
-	//------------ 3. 绑定 EBO, 将索引数据送到 EBO 中
+	//------------
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	//------------ 4. 绑定顶点属性指针
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
-	//------------ 5. 重复1, 2 和 4, 再设定一个 VAO
+	//------------
 	glBindVertexArray(VAO[1]);
+	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
-	// 位置属性
+	//------------
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// 颜色属性
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	//------------ 6. 编译着色器
+	//------------
 	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/" + title + "/";
 	string vsF = prefix + title + ".vs";
 	string fsF = prefix + title + ".fs";
@@ -77,7 +71,7 @@ int main(int argc, char ** argv) {
 		cout << "Shader is not Valid\n";
 		return 1;
 	}
-	//------------ 7. 设置渲染循环
+	//------------
 	LambdaOperation processInputOp(processInput);
 
 	LambdaOperation renderOp([&]() {
@@ -93,6 +87,9 @@ int main(int argc, char ** argv) {
 		//------------
 		glBindVertexArray(VAO[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//------------
+		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
+		glfwPollEvents();
 	});
 
 	LambdaOperation endOp([]() {

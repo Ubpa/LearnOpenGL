@@ -2,7 +2,7 @@
 #define GLFW_H_
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <Utility\Operation.h>
+#include <Utility/Operation.h>
 #include <iostream>
 
 namespace LOGL {
@@ -13,7 +13,7 @@ namespace LOGL {
 		void Init(size_t width = 800, size_t height = 600, char * title = "Title");
 		void Terminate();
 		//void SetCB_FrameBuffSize();
-		void Run(Ubpa::Operation * operation = NULL);
+		void Run(Ubpa::Operation & operation = Ubpa::LambdaOperation([]() {}, false));
 		GLFWwindow * GetWindow();
 		void CloseWindow();
 		int GetKey(int key);

@@ -19,13 +19,17 @@ void Glfw::Init(size_t width, size_t height, char * title){
 }
 void Glfw::Terminate() { glfwTerminate(); }
 GLFWwindow * Glfw::GetWindow() { return window; }
-void Glfw::Run(Ubpa::Operation * operation) {
+void Glfw::Run(Ubpa::Operation & operation) {
 	if (window == NULL)
 		Init();
+	bool loop = true;
 	while (!glfwWindowShouldClose(window))
 	{
-		if (operation != NULL)
-			(*operation)();
+		if (loop) {
+			operation.Run();
+			if (!operation.IsHold())
+				loop = false;
+		}
 	}
 }
 int Glfw::GetKey(int key) { return glfwGetKey(window, key); }
