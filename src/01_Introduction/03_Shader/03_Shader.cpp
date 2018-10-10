@@ -16,7 +16,7 @@ int main(int argc, char ** argv) {
 		<< "*****************************************" << endl;
 	//------------
 	size_t width = 800, height = 600;
-	char title[] = "02_Triangle";
+	char title[] = "03_Shader";
 	Glfw::GetInstance()->Init(width, height, title);
 	//------------
 	float vertices0[] = {
@@ -77,10 +77,10 @@ int main(int argc, char ** argv) {
 	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/02_Triangle/";
 	string vsF = prefix + "02_Triangle.vs";
 	string fsRedF = prefix + "02_Triangle_Red.fs";
-	string fsBlueF = prefix + "02_Triangle_Blue.fs";
+	//string fsBlueF = prefix + "02_Triangle_Blue.fs";
 	Shader shaderRed(vsF.c_str(), fsRedF.c_str());
-	Shader shaderBlue(vsF.c_str(), fsBlueF.c_str());
-	if (!shaderRed.IsValid() || !shaderBlue.IsValid()) {
+	//Shader shaderBlue(vsF.c_str(), fsBlueF.c_str());
+	if (!shaderRed.IsValid() /*|| !shaderBlue.IsValid()*/) {
 		cout << "Shader is not Valid\n";
 		return 1;
 	}
@@ -102,7 +102,7 @@ int main(int argc, char ** argv) {
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 		//------------ Blue
 		glBindVertexArray(VAO[1]);
-		shaderBlue.Use();
+		//shaderBlue.Use();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//------------ ½»»»»º³å
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
