@@ -1,12 +1,10 @@
 #ifndef _IMAGE_H_
 #define _IMAGE_H_
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <Utility/stb_image.h>
-
 class Image {
 public:
-	Image(const char * fileName, int req_comp = 0);
+	Image();
+	Image(const char * fileName, bool flip = false, int req_comp = 0);
 	~Image();
 	//------------
 	bool IsValid() const;
@@ -15,6 +13,7 @@ public:
 	int GetHeight() const;
 	int GetChannel() const;
 	//------------
+	bool Load(const char * fileName, bool flip = false, int req_comp = 0);
 	void Free();
 private:
 	unsigned char * data;

@@ -10,9 +10,14 @@
 
 这是我对 LearnOpenGL 所做的练习
 
-内容基于教程，代码为自行编写，主要目标为面向对象编程
+内容基于教程，代码为自行编写，主要目标如下
 
-目录结构与教程略有不同，现工程目录如下
+- 熟悉OpenGL
+- 面向对象编程
+- 锻炼CMake搭工程能力
+- 完善泛用的 Utility 代码
+
+## 1.3 工程结构
 
 ```
 /LearnOpenGL
@@ -25,6 +30,7 @@
       -ArgManager
       -File
       -Operation
+      -Image
     -glad
     -Glfw
     -Shader

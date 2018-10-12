@@ -1,8 +1,12 @@
 #include <Utility/Image.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <Utility/stb_image.h>
 
+Image::Image()
+	:data(NULL), width(0), height(0), channel(0){ }
 
-Image::Image(const char * fileName, int req_comp) {
-	stbi_load(fileName, &width, &height, &channel, req_comp);
+Image::Image(const char * fileName, bool flip, int req_comp) {
+	Load(fileName, flip, req_comp);
 }
 
 Image::~Image() {
@@ -33,9 +37,20 @@ int Image::GetChannel() const{
 
 //------------
 
+bool Image::Load(const char * fileName, bool flip, int req_comp) {
+	Free();
+	stbi_set_flip_vertically_on_load(flip);
+	data = stbi_load(fileName, &width, &height, &channel, req_comp);
+	return IsValid();
+}
+
+
 void Image::Free() {
 	if (data != NULL) {
 		stbi_image_free(data);
 		data = NULL;
+		width = 0;
+		height = 0;
+		channel = 0;
 	}
 }
