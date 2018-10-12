@@ -1,6 +1,7 @@
 #include <ROOT_PATH.h>
 #include <GLFW/Glfw.h>
 #include <Shader.h>
+#include <Utility/Image.h>
 
 using namespace LOGL;
 using namespace Ubpa;
@@ -14,26 +15,35 @@ int main(int argc, char ** argv) {
 		<< "* 1. Press '1' to set PolygonMode[FILL] *" << endl
 		<< "* 2. Press '2' to set PolygonMode[LINE] *" << endl
 		<< "*****************************************" << endl;
+	//-------------
+	string chapter = "01_Introduction";
+	string subchapter = "04_Texture";
 	//------------
-	size_t width = 1024, height = 768;
-	char title[] = "04_Texture";
-	Glfw::GetInstance()->Init(width, height, title);
+	size_t windowWidth = 1024, windowHeight = 768;
+	string windowTitle = chapter + "/" + subchapter;
+	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
 	//------------
 	float vertices0[] = {
-		0.5f, 0.5f, 0.0f,   // 右上角
-		0.5f, -0.5f, 0.0f,  // 右下角
-		-0.5f, -0.5f, 0.0f, // 左下角
-		-0.5f, 0.5f, 0.0f,   // 左上角
+		//位置              //颜色
+		 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // 右上角
+		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // 右下角
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // 左下角
+		-0.5f,  0.5f, 0.0f, 0.0f, 1.0f  // 左上角
 	};
 	float vertices1[] = {
-		//位置				 //颜色
-		-0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, // 左下角
-		-0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f, // 左上角
-		-1.0f,  0.0f, 0.0f,  0.0f, 0.0f, 1.0f  // 左
+		//位置              //颜色
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下角
+		-0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // 左上角
+		-1.0f,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f  // 左
 	};
 	size_t indices[] = { // 注意索引从0开始! 
 		0, 1, 3, // 第一个三角形
 		1, 2, 3  // 第二个三角形
+	};
+	float texCoords[] = {
+	0.0f, 0.0f, // 左下角
+	1.0f, 0.0f, // 右下角
+	0.5f, 1.0f // 上中
 	};
 	//------------
 	size_t VBO[2];
@@ -42,7 +52,7 @@ int main(int argc, char ** argv) {
 	glGenVertexArrays(2, VAO);
 	size_t EBO;
 	glGenBuffers(1, &EBO);
-	//------------
+	//------------ VAO[0]
 	glBindVertexArray(VAO[0]);
 	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
@@ -50,9 +60,38 @@ int main(int argc, char ** argv) {
 	//------------
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	//------------
+	size_t texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// 为当前绑定的纹理对象设置环绕、过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//------------
+	string imgName = string(ROOT_PATH) + "/data/textures/containers.jpg";
+	Image img(imgName.c_str());
+	/*
+	@1 纹理目标
+	@2 多级渐远纹理的级别 （0 为基本级别)
+	@3 纹理格式
+	@4 width
+	@5 height
+	@6 0 (历史遗留问题)
+	@7 源图格式
+	@8 源图类型
+	@9 图像数据
+	*/
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.GetWidth(), img.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, img.GetData());
+	// 为当前绑定的纹理自动生成所有需要的多级渐远纹理。
+	glGenerateMipmap(GL_TEXTURE_2D);
+	img.Free();
+	//------------ VAO[1]
 	glBindVertexArray(VAO[1]);
 	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
@@ -63,18 +102,18 @@ int main(int argc, char ** argv) {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	//------------
-	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/" + title + "/";
-	string vsF = prefix + title + ".vs";
-	string fsF = prefix + title + ".fs";
+	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
+	string vsF = prefix + subchapter + ".vs";
+	string fsF = prefix + subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
 	if (!shader.IsValid()) {
 		cout << "Shader is not Valid\n";
 		return 1;
 	}
 	//------------
-	LambdaOperation processInputOp(processInput);
+	LambdaOp processInputOp(processInput);
 
-	LambdaOperation renderOp([&]() {
+	LambdaOp renderOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//------------ 
@@ -87,20 +126,16 @@ int main(int argc, char ** argv) {
 		//------------
 		glBindVertexArray(VAO[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//------------
+	});
+
+	LambdaOp endOp([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		glfwPollEvents();
 	});
 
-	LambdaOperation endOp([]() {
-		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
-		glfwPollEvents();
-	});
-
-	OperationQueue opQueue;
-	opQueue.push(processInputOp);
-	opQueue.push(renderOp);
-	opQueue.push(endOp);
+	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
+	OpQueue opQueue; 
+	opQueue << processInputOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------

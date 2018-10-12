@@ -5,7 +5,7 @@ using namespace std;
 
 Glfw::Glfw():window(NULL){ }
 //------------
-void Glfw::Init(size_t width, size_t height, char * title){
+void Glfw::Init(size_t width, size_t height, const char * title){
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -41,7 +41,7 @@ Glfw* Glfw::GetInstance(){ return instance; }
 void Glfw::CB_FrameBuffSize(GLFWwindow* window, int width, int height){
 	glViewport(0, 0, width, height);
 }
-void Glfw::GenWindow(size_t width, size_t height, char * title) {
+void Glfw::GenWindow(size_t width, size_t height, const char * title) {
 	window = glfwCreateWindow(width, height, title, NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;

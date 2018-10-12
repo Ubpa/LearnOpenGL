@@ -1,8 +1,9 @@
 #ifndef _OPERATION_H_
 #define _OPERATION_H_
 
-#include<queue>
+#include<deque>
 #include<functional>
+#include<list>
 
 namespace Ubpa{
 	class Operation{
@@ -11,28 +12,36 @@ namespace Ubpa{
 		bool IsHold();
 		void SetIsHold(bool isHold);
 		void Run();
+		virtual Operation * NewCopy() const = 0;
 		virtual void operator()() = 0;
 		virtual ~Operation();
 	protected:
 		bool isHold;
 	};
 
-	class LambdaOperation : public Operation{
+	class LambdaOp : public Operation{
 	public:
-		LambdaOperation(const std::function<void()> & operation, bool isHold = true);
+		LambdaOp(const std::function<void()> & operation, bool isHold = true);
 		void operator()();
+		virtual Operation * NewCopy() const;
 	private:
 		std::function<void()> operation;
 	};
 
-	class OperationQueue : public std::queue<Operation *>, public Operation {
+	class OpQueue : public Operation {
 	public:
-		OperationQueue(bool isHold = true);
-		void push(Operation &);
-		OperationQueue & operator<<(Operation & operation);
+		OpQueue(bool isHold = true);
+		void Push(const Operation & op);
+		OpQueue & operator<<(const Operation & operation);
 		void operator()();
+		virtual Operation * NewCopy() const;
+		virtual ~OpQueue();
+		size_t Size();
 	private:
-		using std::queue<Operation *>::push;
+		OpQueue(const OpQueue&);
+		OpQueue& operator=(const OpQueue&);
+		//-------------
+		std::deque<Operation *> opDq;
 	};
 };
 #endif//! _FILE_H_

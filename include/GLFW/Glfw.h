@@ -10,10 +10,10 @@ namespace LOGL {
 	public:
 		static Glfw * GetInstance();
 		//------------
-		void Init(size_t width = 800, size_t height = 600, char * title = "Title");
+		void Init(size_t width = 800, size_t height = 600, const char * title = "Title");
 		void Terminate();
 		//void SetCB_FrameBuffSize();
-		void Run(Ubpa::Operation & operation = Ubpa::LambdaOperation([]() {}, false));
+		void Run(Ubpa::Operation & operation = Ubpa::LambdaOp([]() {}, false));
 		GLFWwindow * GetWindow();
 		void CloseWindow();
 		int GetKey(int key);
@@ -23,7 +23,7 @@ namespace LOGL {
 		Glfw& operator=(const Glfw&);
 		//------------
 		static void CB_FrameBuffSize(GLFWwindow* window, int width, int height);
-		void GenWindow(size_t width = 800, size_t height = 600, char * title = NULL);
+		void GenWindow(size_t width = 800, size_t height = 600, const char * title = NULL);
 		void LoadGL();
 		//------------
 		GLFWwindow * window;

@@ -10,27 +10,25 @@ int main(int argc, char ** argv) {
 	char title[] = "01_CreateWindow";
 	Glfw::GetInstance()->Init(width, height, title);
 	//------------
-	LambdaOperation processInputOp(processInput);
+	LambdaOp processInputOp(processInput);
 
-	LambdaOperation renderOp([&]() {
+	LambdaOp renderOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	});
 
-	LambdaOperation endOp([]() {
+	LambdaOp endOp([]() {
 		//------------ 交换缓冲
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		//------------ 拉取事件
 		glfwPollEvents();
 	});
 
-	//OperationQueue opQueue(); <--- 编译器会以为声明了一个函数
-	OperationQueue opQueue;
-	opQueue.push(processInputOp);
-	opQueue.push(renderOp);
-	opQueue.push(endOp);
+	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
+	OpQueue opQueue;
+	opQueue << processInputOp << renderOp << endOp;
 	//------------
-	Glfw::GetInstance()->Run([]() {});
+	Glfw::GetInstance()->Run(opQueue);
 	//------------
 	Glfw::GetInstance()->Terminate();
 	return 0;

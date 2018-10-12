@@ -85,9 +85,9 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 	//------------ 6. 设置渲染循环
-	LambdaOperation processInputOp(processInput, true);
+	LambdaOp processInputOp(processInput, true);
 
-	LambdaOperation renderOp([&]() {
+	LambdaOp renderOp([&]() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//------------ Red
@@ -106,15 +106,14 @@ int main(int argc, char ** argv) {
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}, true);
 
-	LambdaOperation endOp([]() {
+	LambdaOp endOp([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		glfwPollEvents();
 	});
 
-	OperationQueue opQueue;
-	opQueue.push(processInputOp);
-	opQueue.push(renderOp);
-	opQueue.push(endOp);
+	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
+	OpQueue opQueue;
+	opQueue << processInputOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
