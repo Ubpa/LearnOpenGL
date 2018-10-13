@@ -6,18 +6,16 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-void processInput();
+void registerInput();
 
 int main(int argc, char ** argv) {
-	cout
-		<< "*****************************************" << endl
-		<< "* 1. Press '1' to set PolygonMode[FILL] *" << endl
-		<< "* 2. Press '2' to set PolygonMode[LINE] *" << endl
-		<< "*****************************************" << endl;
-	//------------
 	size_t width = 800, height = 600;
-	char title[] = "02_Triangle";
-	Glfw::GetInstance()->Init(width, height, title);
+	string chapter = "01_Introduction";
+	string subchapter = "02_Triangle";
+	//------------
+	size_t windowWidth = 1024, windowHeight = 768;
+	string windowTitle = chapter + "/" + subchapter;
+	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
 	//------------
 	float vertices0[] = {
 		0.5f, 0.5f, 0.0f,   // 右上角
@@ -85,9 +83,9 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 	//------------ 6. 设置渲染循环
-	LambdaOp processInputOp(processInput, true);
+	auto initOp = new LambdaOp(registerInput, false);
 
-	LambdaOp renderOp([&]() {
+	auto renderOp = new LambdaOp ([&]() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//------------ Red
@@ -106,14 +104,14 @@ int main(int argc, char ** argv) {
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	}, true);
 
-	LambdaOp endOp([]() {
+	auto endOp = new LambdaOp ([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		glfwPollEvents();
 	});
 
 	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
-	OpQueue opQueue;
-	opQueue << processInputOp << renderOp << endOp;
+	auto opQueue = new OpQueue;
+	(*opQueue) << initOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
@@ -121,11 +119,22 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
-void processInput(){
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		Glfw::GetInstance()->CloseWindow();
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_2) == GLFW_PRESS)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+void registerInput() {
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			Glfw::GetInstance()->CloseWindow();
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_1, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_2, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_2) == GLFW_PRESS)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	});
+
+	cout << endl
+		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
+		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
+		<< "* 3. Press 'ESC' to close exe" << endl << endl;
 }

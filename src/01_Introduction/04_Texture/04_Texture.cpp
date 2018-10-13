@@ -9,13 +9,16 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
+class RegisterInput : public Operation{
+public:
+	RegisterInput(size_t textureID, bool isHold = true)
+		:Operation(isHold), textureID(textureID) { }
+	void Run();
+private:
+	size_t textureID;
+};
+
 int main(int argc, char ** argv) {
-	cout
-		<< "*****************************************" << endl
-		<< "* 1. Press '1' to set PolygonMode[FILL] *" << endl
-		<< "* 2. Press '2' to set PolygonMode[LINE] *" << endl
-		<< "*****************************************" << endl;
-	//-------------
 	string chapter = "01_Introduction";
 	string subchapter = "04_Texture";
 	//------------
@@ -108,24 +111,11 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture0", 0);
 	shader.SetInt("texture1", 1);
 	//------------
-	vector<pair<int, LambdaOp> > keyOpVec;
-	keyOpVec.push_back(make_pair(GLFW_KEY_ESCAPE, LambdaOp([]() {
-		Glfw::GetInstance()->CloseWindow();
-	})));
-	keyOpVec.push_back(make_pair(GLFW_KEY_1, LambdaOp([]() {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	})));
-	keyOpVec.push_back(make_pair(GLFW_KEY_2, LambdaOp([]() {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	})));
-	LambdaOp processInputOp([&]() {
-		for (size_t i = 0; i < keyOpVec.size(); i++) {
-			if (glfwGetKey(Glfw::GetInstance()->GetWindow(), keyOpVec[i].first) == GLFW_PRESS)
-				keyOpVec[i].second.Run();
-		}
-	});
+	
+	auto registerInputOp = new RegisterInput(texture[1], false);
+	
 	//-------------
-	LambdaOp renderOp([&]() {
+	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//------------ 
@@ -142,17 +132,60 @@ int main(int argc, char ** argv) {
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	});
 	//-------------
-	LambdaOp endOp([]() {
+	auto endOp = new LambdaOp ([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		glfwPollEvents();
 	});
 	//-------------
 	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
-	OpQueue opQueue; 
-	opQueue << processInputOp << renderOp << endOp;
+	auto opQueue = new OpQueue;
+	(*opQueue) << registerInputOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
 	Glfw::GetInstance()->Terminate();
 	return 0;
+}
+
+void RegisterInput::Run() {
+	int keys[7] = {
+		GLFW_KEY_ESCAPE, GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6
+	};
+	function<void()> ops[7] = {
+		[]() { Glfw::GetInstance()->CloseWindow(); },
+		[]() {glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); },
+		[]() {glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); },
+		[&]() {
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		},
+		[&]() {
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		},
+		[&]() {
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		},
+		[&]() {
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		},
+	};
+
+	for (int i = 0; i < 7; i++)
+		EventManager::GetInstance()->RegisterOp(keys[i], ops[i]);
+
+	cout << endl
+		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
+		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
+		<< "* 3. Press '3' to set TEXTURE_WRAP[REPEAT]" << endl
+		<< "* 4. Press '4' to set TEXTURE_WRAP[MIRRORED_REPEAT]" << endl
+		<< "* 5. Press '5' to set TEXTURE_WRAP[CLAMP_TO_EDGE]" << endl
+		<< "* 6. Press '6' to set TEXTURE_WRAP[CLAMP_TO_BORDER]" << endl
+		<< "* 7. Press 'ESC' to close exe" << endl << endl;
 }

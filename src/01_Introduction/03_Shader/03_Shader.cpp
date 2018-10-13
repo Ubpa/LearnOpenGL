@@ -6,18 +6,16 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-void processInput();
+void registerInput();
 
 int main(int argc, char ** argv) {
-	cout
-		<< "*****************************************" << endl
-		<< "* 1. Press '1' to set PolygonMode[FILL] *" << endl
-		<< "* 2. Press '2' to set PolygonMode[LINE] *" << endl
-		<< "*****************************************" << endl;
-	//------------
 	size_t width = 800, height = 600;
-	char title[] = "03_Shader";
-	Glfw::GetInstance()->Init(width, height, title);
+	string chapter = "01_Introduction";
+	string subchapter = "03_Shader";
+	//------------
+	size_t windowWidth = 1024, windowHeight = 768;
+	string windowTitle = chapter + "/" + subchapter;
+	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
 	//------------
 	float vertices0[] = {
 		0.5f, 0.5f, 0.0f,   // 右上角
@@ -69,18 +67,18 @@ int main(int argc, char ** argv) {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	//------------ 6. 编译着色器
-	string prefix = string(ROOT_PATH) + "/data/shaders/01_Introduction/" + title + "/";
-	string vsF = prefix + title + ".vs";
-	string fsF = prefix + title + ".fs";
+	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
+	string vsF = prefix + subchapter + ".vs";
+	string fsF = prefix + subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
 	if (!shader.IsValid()) {
 		cout << "Shader is not Valid\n";
 		return 1;
 	}
 	//------------ 7. 设置渲染循环
-	LambdaOp processInputOp(processInput);
+	auto initOp = new LambdaOp(registerInput, false);
 
-	LambdaOp renderOp([&]() {
+	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//------------ 
@@ -95,14 +93,14 @@ int main(int argc, char ** argv) {
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 	});
 
-	LambdaOp endOp([]() {
+	auto endOp = new LambdaOp([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		glfwPollEvents();
 	});
 
 	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
-	OpQueue opQueue;
-	opQueue << processInputOp << renderOp << endOp;
+	auto opQueue = new OpQueue;
+	(*opQueue) << initOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
@@ -110,11 +108,22 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
-void processInput(){
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		Glfw::GetInstance()->CloseWindow();
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_2) == GLFW_PRESS)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+void registerInput(){
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			Glfw::GetInstance()->CloseWindow();
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_1, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_2, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_2) == GLFW_PRESS)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	});
+
+	cout << endl
+		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
+		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
+		<< "* 3. Press 'ESC' to close exe" << endl << endl;
 }

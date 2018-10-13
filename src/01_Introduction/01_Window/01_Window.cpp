@@ -2,31 +2,37 @@
 
 using namespace LOGL;
 using namespace Ubpa;
+using namespace std;
 
-void processInput();
+void registerInput();
 
 int main(int argc, char ** argv) {
 	size_t width = 800, height = 600;
-	char title[] = "01_CreateWindow";
-	Glfw::GetInstance()->Init(width, height, title);
+	string chapter = "01_Introduction";
+	string subchapter = "01_Window";
 	//------------
-	LambdaOp processInputOp(processInput);
+	size_t windowWidth = 1024, windowHeight = 768;
+	string windowTitle = chapter + "/" + subchapter;
+	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
+	//------------
+	registerInput();
 
-	LambdaOp renderOp([&]() {
+	auto initOp = new LambdaOp(registerInput, false);
+
+	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	});
 
-	LambdaOp endOp([]() {
+	auto endOp = new LambdaOp([]() {
 		//------------ 交换缓冲
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
 		//------------ 拉取事件
 		glfwPollEvents();
 	});
 
-	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
-	OpQueue opQueue;
-	opQueue << processInputOp << renderOp << endOp;
+	auto opQueue = new OpQueue;
+	(*opQueue) << initOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
@@ -34,7 +40,16 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
-void processInput() {
-	if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		Glfw::GetInstance()->CloseWindow();
+void registerInput() {
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, []() {
+		if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			Glfw::GetInstance()->CloseWindow();
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_1, []() { 
+		if(Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
+			printf("press 1\n");
+	});
+	cout << endl
+		<< "* 1. Press '1' to print \"press 1\"" << endl
+		<< "* 2. Press 'ESC' to close exe" << endl << endl;
 }
