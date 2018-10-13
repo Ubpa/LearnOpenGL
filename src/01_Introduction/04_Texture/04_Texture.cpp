@@ -2,8 +2,6 @@
 #include <GLFW/Glfw.h>
 #include <Shader.h>
 #include <Utility/Image.h>
-#include <vector>
-#include <algorithm>
 
 using namespace LOGL;
 using namespace Ubpa;
