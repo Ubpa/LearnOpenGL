@@ -1,6 +1,7 @@
 #include <ROOT_PATH.h>
 #include <GLFW/Glfw.h>
 #include <Shader.h>
+#include <Utility/LambdaOp.h>
 
 using namespace LOGL;
 using namespace Ubpa;

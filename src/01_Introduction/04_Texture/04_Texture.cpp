@@ -2,6 +2,7 @@
 #include <GLFW/Glfw.h>
 #include <Shader.h>
 #include <Utility/Image.h>
+#include <Utility/InfoLambdaOp.h>
 
 using namespace LOGL;
 using namespace Ubpa;

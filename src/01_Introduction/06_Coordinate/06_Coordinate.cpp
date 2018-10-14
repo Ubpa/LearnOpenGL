@@ -3,6 +3,7 @@
 #include <Shader.h>
 #include <Utility/Image.h>
 #include <Utility/Storage.h>
+#include <Utility/InfoLambdaOp.h>
 
 using namespace LOGL;
 using namespace std;

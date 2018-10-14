@@ -1,5 +1,7 @@
 #include <Utility/EventManager.h>
 
+#include <Utility/LambdaOp.h>
+
 using namespace Ubpa;
 
 EventManager::EventManager() {}

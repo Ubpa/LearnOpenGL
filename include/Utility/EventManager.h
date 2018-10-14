@@ -1,7 +1,8 @@
 #ifndef _EVENT_MANAGER_H_
 #define _EVENT_MANAGER_H_
 
-#include <Utility/Operation.h>
+#include <Utility/OpQueue.h>
+#include <functional>
 #include <map>
 
 namespace Ubpa {
