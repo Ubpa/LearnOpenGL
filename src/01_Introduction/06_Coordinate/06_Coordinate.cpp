@@ -2,23 +2,34 @@
 #include <GLFW/Glfw.h>
 #include <Shader.h>
 #include <Utility/Image.h>
+#include <Utility/Storage.h>
 
 using namespace LOGL;
-using namespace Ubpa;
 using namespace std;
+using namespace Ubpa;
 
 class RegisterInput : public Operation{
 public:
-	RegisterInput(size_t textureID, bool isHold = true)
-		:Operation(isHold), textureID(textureID) { }
+	RegisterInput(size_t textureID, size_t windowWidth, size_t windowHeight, glm::mat4 * projection, bool isHold = true)
+		:Operation(isHold), textureID(textureID), windowWidth(windowWidth), windowHeight(windowHeight), projection(projection){
+	}
 	void Run();
 private:
 	size_t textureID;
+	//------------
+	struct Info1 {
+		glm::mat4 * projection;
+		float width;
+		float height;
+	};
+	glm::mat4 * projection;
+	size_t windowWidth;
+	size_t windowHeight;
 };
 
 int main(int argc, char ** argv) {
 	string chapter = "01_Introduction";
-	string subchapter = "04_Texture";
+	string subchapter = "06_Coordinate";
 	//------------
 	size_t windowWidth = 1024, windowHeight = 768;
 	string windowTitle = chapter + "/" + subchapter;
@@ -79,17 +90,6 @@ int main(int argc, char ** argv) {
 			cout << "Failed to load texture[" << imgName[i] << "]\n";
 			return 1;
 		}
-		/*
-		@1 纹理目标
-		@2 多级渐远纹理的级别 （0 为基本级别)
-		@3 纹理格式
-		@4 width
-		@5 height
-		@6 0 (历史遗留问题)
-		@7 源图格式
-		@8 源图类型
-		@9 图像数据
-		*/
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img[i].GetWidth(), img[i].GetHeight(), 0, mode[i], GL_UNSIGNED_BYTE, img[i].GetData());
 		// 为当前绑定的纹理自动生成所有需要的多级渐远纹理。
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -109,9 +109,16 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture0", 0);
 	shader.SetInt("texture1", 1);
 	//------------
+	glm::mat4 model(1.0f);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 view(1.0f);
+	// 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+	//------------
 	
-	auto registerInputOp = new RegisterInput(texture[1], false);
-	
+ 	auto registerInputOp = new RegisterInput(1, windowWidth, windowHeight, &projection, false);
+
 	//-------------
 	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -124,9 +131,10 @@ int main(int argc, char ** argv) {
 		//------------
 		shader.Use();
 		glBindVertexArray(VAO);
-		float greenValue = (sinf(4.0f*glfwGetTime()) / 2.0f) + 0.5f;
-		shader.SetVec4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
-		shader.SetVec3f("offset", sinf(4.0f*glfwGetTime()) * 0.5f, 0, 0);
+		//------------
+		shader.SetMat4f("model", model);
+		shader.SetMat4f("view", view);
+		shader.SetMat4f("projection", projection);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	});
 	//-------------
@@ -135,7 +143,6 @@ int main(int argc, char ** argv) {
 		glfwPollEvents();
 	});
 	//-------------
-	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
 	auto opQueue = new OpQueue;
 	(*opQueue) << registerInputOp << renderOp << endOp;
 	//------------
@@ -146,13 +153,13 @@ int main(int argc, char ** argv) {
 }
 
 void RegisterInput::Run() {
-	//Close Window
+	// Close Window
 	auto closeWindowOp = new LambdaOp([]() {
 		Glfw::GetInstance()->CloseWindow();
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, closeWindowOp);
 
-	//Polygon Mode
+	// Polygon Mode
 	//------------ GLFW_KEY_1
 	auto polygonModeFillOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -164,7 +171,7 @@ void RegisterInput::Run() {
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_2, polygonModeLineOp);
 
-	//Texture Warp
+	// Texture Warp
 	size_t info0 = GL_TEXTURE0 + textureID;
 	//------------ GLFW_KEY_3
 	auto textWarpReapeatOp = new InfoLambdaOp<size_t>("textWarpReapeatOp", info0, []() {
@@ -199,6 +206,23 @@ void RegisterInput::Run() {
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_6, textWarpClamp2BodderOp);
 
+	// Projection
+	Info1 info1 = { projection, (float)windowWidth , (float)windowHeight };
+	//------------ GLFW_KEY_7
+	auto perspectiveOp = new InfoLambdaOp<Info1>("perspectiveOp", info1, []() {
+		auto perspectiveOp = InfoLambdaOp<Info1>::GetFromStorage("perspectiveOp");
+		auto & info = perspectiveOp->GetInfo();
+		(*info.projection) = glm::perspective(glm::radians(45.0f), info.width / info.height, 0.1f, 100.0f);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_7, perspectiveOp);
+	//------------ GLFW_KEY_8
+	auto orthoOp = new InfoLambdaOp<Info1>("orthoOp", info1, []() {
+		auto orthoOp = InfoLambdaOp<Info1>::GetFromStorage("orthoOp");
+		auto & info = orthoOp->GetInfo();
+		(*info.projection) = glm::ortho(-1.0f, 1.0f, -info.height / info.width, info.height / info.width, 0.01f, 100.0f);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_8, orthoOp);
+
 	//------------
 
 	cout << endl
@@ -208,5 +232,7 @@ void RegisterInput::Run() {
 		<< "* 4. Press '4' to set TEXTURE_WRAP[MIRRORED_REPEAT]" << endl
 		<< "* 5. Press '5' to set TEXTURE_WRAP[CLAMP_TO_EDGE]" << endl
 		<< "* 6. Press '6' to set TEXTURE_WRAP[CLAMP_TO_BORDER]" << endl
-		<< "* 7. Press 'ESC' to close exe" << endl << endl;
+		<< "* 7. Press '7' to set projection[perspective]" << endl
+		<< "* 8. Press '8' to set projection[ortho]" << endl
+		<< "* 9. Press 'ESC' to close exe" << endl << endl;
 }

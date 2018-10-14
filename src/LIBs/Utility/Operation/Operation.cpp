@@ -12,6 +12,14 @@ void Operation::SetIsHold(bool isHold) { this->isHold = isHold; }
 
 void Operation::operator()() { Run(); }
 
+Operation * Operation::GetFromStorage(const std::string & ID) {
+	auto target = Storage<Operation *>::GetInstance()->Get(ID);
+	if (target == NULL)
+		return NULL;
+
+	return *target;
+}
+
 //------------
 
 LambdaOp::LambdaOp(const std::function<void()> & op, bool isHold)

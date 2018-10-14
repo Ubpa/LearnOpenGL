@@ -5,11 +5,12 @@
 #include<list>
 #include<string>
 #include<memory>
+#include<map>
+#include<Utility/Storage.h>
 
 namespace Ubpa{
 	template<typename T>
 	using Ptr = std::shared_ptr<T>;
-	static int pad = 0;
 	//操作
 	class Operation{
 	public:
@@ -21,13 +22,15 @@ namespace Ubpa{
 		void operator()();
 		//------------
 		virtual void Run() = 0;
+		//------------
+		static Operation * GetFromStorage(const std::string & ID);
 	protected:
 		virtual ~Operation() { printf("Delete Operation\n"); };
 		//------------
 		bool isHold;
 	private:
-		Operation(const Operation&);
-		Operation& operator=(const Operation&);
+		Operation(const Operation&) = default;
+		Operation& operator=(const Operation&) = default;
 	};
 
 	//Lambda操作
@@ -39,12 +42,31 @@ namespace Ubpa{
 		virtual void Run();
 	protected:
 		virtual ~LambdaOp() { printf("Delete LambdaOp\n"); };
-	private:
 		std::function<void()> op;
-		//------------
-		LambdaOp(const LambdaOp&);
-		LambdaOp& operator=(const LambdaOp&);
+	private:
+		LambdaOp(const LambdaOp&) = default;
+		LambdaOp& operator=(const LambdaOp&) = default;
 	};
+	
+	//InfoLambdaOp
+	template<typename T>
+	class InfoLambdaOp : public LambdaOp {
+	public:
+		InfoLambdaOp(const std::string & ID, const T & info = T(), const std::function<void()> & op = []() {}, bool isHold = true);
+		//------------
+		void SetInfo(const T & info);
+		T & GetInfo();
+		//------------
+		static InfoLambdaOp<T> * GetFromStorage(const std::string & ID);
+	protected:
+		virtual ~InfoLambdaOp();
+		std::string ID;
+		T info;
+	private:
+		InfoLambdaOp(const InfoLambdaOp&) = default;
+		InfoLambdaOp& operator=(const InfoLambdaOp&) = default;
+	};
+
 
 	//操作队列
 	class OpQueue : public Operation {
@@ -63,8 +85,37 @@ namespace Ubpa{
 		//------------
 		std::list< Ptr<Operation> > opList;
 	private:
-		OpQueue(const OpQueue &);
-		OpQueue& operator=(const OpQueue &);
+		OpQueue(const OpQueue &) = default;
+		OpQueue& operator=(const OpQueue &) = default;
 	};
+
+	//------------
+
+	template<typename T>
+	InfoLambdaOp<T>::InfoLambdaOp(const std::string & ID, const T & info, const std::function<void()> & op, bool isHold)
+		:info(info), ID(ID), LambdaOp(op, isHold){
+		Storage<Operation *>::GetInstance()->Register(ID, this);
+	}
+
+	template<typename T>
+	void InfoLambdaOp<T>::SetInfo(const T & info) {
+		this->info = info;
+	}
+
+	template<typename T>
+	T & InfoLambdaOp<T>::GetInfo() {
+		return info;
+	}
+
+	template<typename T>
+	InfoLambdaOp<T>::~InfoLambdaOp() {
+		Storage<Operation *>::GetInstance()->Unregister(ID);
+		printf("Delete InfoLambdaOp\n");
+	};
+	template<typename T>
+	InfoLambdaOp<T> * InfoLambdaOp<T>::GetFromStorage(const std::string & ID) {
+		auto target = Operation::GetFromStorage(ID);
+		return dynamic_cast<InfoLambdaOp<T> *>(target);
+	}
 };
 #endif//! _FILE_H_
