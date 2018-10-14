@@ -85,9 +85,10 @@ int main(int argc, char ** argv) {
 		//------------ 
 		glBindVertexArray(VAO[0]);
 		shader.Use();
-		float greenValue = (sinf(5.0f*glfwGetTime()) / 2.0f) + 0.5f;
+		float t = static_cast<float>(glfwGetTime());
+		float greenValue = (sinf(5.0f*t) / 2.0f) + 0.5f;
 		shader.SetVec4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
-		shader.SetVec3f("offset", sinf(5.0f*glfwGetTime()) * 0.5f, 0, 0);
+		shader.SetVec3f("offset", sinf(5.0f*t) * 0.5f, 0, 0);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 		//------------
 		glBindVertexArray(VAO[1]);

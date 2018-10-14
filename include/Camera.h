@@ -11,24 +11,32 @@ namespace LOGL {
 	{
 	public:
 		enum ENUM_Movement {
-			FORWARD,
-			BACKWARD,
-			LEFT,
-			RIGHT,
-			UP,
-			DOWN
+			MOVE_FORWARD,
+			MOVE_BACKWARD,
+			MOVE_LEFT,
+			MOVE_RIGHT,
+			MOVE_UP,
+			MOVE_DOWN
+		};
+		enum ENUM_Projection {
+			PROJECTION_PERSEPCTIVE,
+			PROJECTION_ORTHO
 		};
 
 		//------------
 
 		// Constructor with vectors
-		Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
-
-		// Constructor with scalar values
-		Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+		Camera(float rationWH = RATIO_WH, float nearPlane = NEAR_PLANE, float farPlane = FAR_PLANE, glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, ENUM_Projection projectionMode = PROJECTION_MODE);
 
 		// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
 		glm::mat4 GetViewMatrix();
+
+		// Returns the projection matrix calculated using zoom, ratioWH, nearPlane, farPlane
+		glm::mat4 GetProjectionMatrix();
+
+		void SetPerspective();
+
+		void SetOrtho();
 
 		// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 		void ProcessKeyboard(ENUM_Movement direction, float deltaTime);
@@ -41,11 +49,15 @@ namespace LOGL {
 
 	private:
 		// Default camera values
+		static const float RATIO_WH;
+		static const float NEAR_PLANE;
+		static const float FAR_PLANE;
 		static const float YAW;
 		static const float PITCH;
 		static const float SPEED;
 		static const float SENSITIVITY;
 		static const float ZOOM;
+		static const ENUM_Projection PROJECTION_MODE;
 
 		//------------
 
@@ -67,14 +79,10 @@ namespace LOGL {
 		float MovementSpeed;
 		float MouseSensitivity;
 		float Zoom;
+		float rationWH;
+		float nearPlane;
+		float farPlane;
+		ENUM_Projection projectionMode;
 	};
-
-	//------------
-
-	const float Camera::YAW = -90.0f;
-	const float Camera::PITCH = 0.0f;
-	const float Camera::SPEED = 2.5f;
-	const float Camera::SENSITIVITY = 0.1f;
-	const float Camera::ZOOM = 45.0f;
 }
 #endif//! _CAMERA_H_

@@ -1,5 +1,7 @@
 #include <GLFW/Glfw.h>
 
+#include <Utility/Storage.h>
+
 using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
@@ -15,14 +17,49 @@ void Glfw::Init(size_t width, size_t height, const char * title){
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//mac os
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
 	//------------
 	GenWindow(width, height, title);
 	LoadGL();
 	glViewport(0, 0, width, height);
-	glfwSetKeyCallback(Glfw::GetInstance()->GetWindow(), [](GLFWwindow * window, int key, int scanCode, int state, int mods) {
-		Ubpa::EventManager::GetInstance()->Response(key);
+	//------------
+	glfwSetKeyCallback(window, [](GLFWwindow * window, int key, int scanCode, int state, int mods) {
+		size_t kbState =
+			(state == GLFW_PRESS ? EventManager::KEYBOARD_PRESS
+				: (state == GLFW_REPEAT ? EventManager::KEYBOARD_REPEAT
+					: (state == GLFW_RELEASE ? EventManager::KEYBOARD_RELEASE
+						: 0)));
+		if(kbState != 0)
+			EventManager::GetInstance()->Response(key| kbState);
+		EventManager::GetInstance()->Response(key | Ubpa::EventManager::KEYBOARD);
 	});
+	//------------
+	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
+		static float lastX = xPos, lastY = yPos;
+		static float mousePos_XOffset, mousePos_YOffset;
+		Storage<float *>::GetInstance()->Register("mousePos_XOffset", &mousePos_XOffset);
+		Storage<float *>::GetInstance()->Register("mousePos_YOffset", &mousePos_YOffset);
+		//------------
+		mousePos_XOffset = xPos - lastX;
+		mousePos_YOffset = lastY - yPos;
+		lastX = xPos;
+		lastY = yPos;
+		EventManager::GetInstance()->Response(EventManager::MOUSE_MOUVE);
+	});
+	//------------
+	glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
+		static float mouseScroll_YOffset;
+		Storage<float *>::GetInstance()->Register("mouseScroll_YOffset", &mouseScroll_YOffset);
+		//------------
+		mouseScroll_YOffset = yOffset;
+		EventManager::GetInstance()->Response(EventManager::MOUSE_SCROLL);
+	});
+	//------------
 	glEnable(GL_DEPTH_TEST);
+}
+
+void Glfw::LockCursor() {
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Glfw::Terminate() { glfwTerminate(); }

@@ -17,6 +17,7 @@ namespace LOGL {
 		void Run(Ubpa::Ptr<Ubpa::Operation> & op);
 		GLFWwindow * GetWindow();
 		void CloseWindow();
+		void LockCursor();
 		int GetKey(int key);
 	private:
 		Glfw();
