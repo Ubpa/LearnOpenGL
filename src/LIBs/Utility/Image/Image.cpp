@@ -1,4 +1,5 @@
 #include <Utility/Image.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <Utility/stb_image.h>
 

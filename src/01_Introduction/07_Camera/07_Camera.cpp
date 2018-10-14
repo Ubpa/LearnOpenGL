@@ -2,65 +2,114 @@
 #include <GLFW/Glfw.h>
 #include <Shader.h>
 #include <Utility/Image.h>
+#include <Utility/Storage.h>
+#include <Utility/InfoLambdaOp.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <Utility/InfoLambdaOp.h>
 
 using namespace LOGL;
-using namespace Ubpa;
 using namespace std;
+using namespace Ubpa;
 
-//注册输入
-class RegisterInput : public Operation {
+class RegisterInput : public Operation{
 public:
-	RegisterInput(size_t textureID, bool isHold = true)
-		:Operation(isHold), textureID(textureID) { }
+	RegisterInput(size_t textureID, size_t windowWidth, size_t windowHeight, glm::mat4 * projection, bool isHold = true)
+		:Operation(isHold), textureID(textureID), windowWidth(windowWidth), windowHeight(windowHeight), projection(projection){
+	}
 	void Run();
 private:
 	size_t textureID;
+	//------------
+	struct Info1 {
+		glm::mat4 * projection;
+		float width;
+		float height;
+	};
+	glm::mat4 * projection;
+	size_t windowWidth;
+	size_t windowHeight;
 };
 
 int main(int argc, char ** argv) {
 	string chapter = "01_Introduction";
-	string subchapter = "05_Transform";
-	//------------ 窗口初始化
-	size_t windowWidth = 1024, windowHeight = 768;
+	string subchapter = "07_Camera";
+	//------------
+	size_t windowWidth = 1024, windowHeight = 576;
 	string windowTitle = chapter + "/" + subchapter;
 	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
-	//------------ 数据
+	//------------
 	float vertices[] = {
-		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-			 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // 右上
-			 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // 右下
-			-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-			-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // 左上
+	-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
+	-0.5f,  0.5f,  0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+
+	-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f,  0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
 	};
-	size_t indices[] = { // 注意索引从0开始! 
-		0, 1, 3, // 第一个三角形
-		1, 2, 3  // 第二个三角形
+	//------------
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 	//------------
 	size_t VBO;
 	glGenBuffers(1, &VBO);
 	size_t VAO;
 	glGenVertexArrays(1, &VAO);
-	size_t EBO;
-	glGenBuffers(1, &EBO);
 	//------------
 	glBindVertexArray(VAO);
 	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	//------------
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 	//------------
 	size_t texture[2];
 	glGenTextures(2, texture);
@@ -71,7 +120,7 @@ int main(int argc, char ** argv) {
 	Image img[2];
 	GLenum mode[2] = { GL_RGB, GL_RGBA };
 	bool flip[2] = { false, true };
-	//------------- 设置纹理
+	//-------------
 	for (size_t i = 0; i < 2; i++) {
 		glBindTexture(GL_TEXTURE_2D, texture[i]);
 		// 为当前绑定的纹理对象设置环绕、过滤方式
@@ -89,7 +138,7 @@ int main(int argc, char ** argv) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 		img[i].Free();
 	}
-	//------------- 设置着色器
+	//------------
 	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
 	string vsF = prefix + subchapter + ".vs";
 	string fsF = prefix + subchapter + ".fs";
@@ -103,13 +152,18 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture0", 0);
 	shader.SetInt("texture1", 1);
 	//------------
+	glm::mat4 view(1.0f);
+	// 注意，我们将矩阵向我们要进行移动场景的反方向移动。
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+	//------------
 	
-	auto registerInputOp = new RegisterInput(1, false);
-	
+ 	auto registerInputOp = new RegisterInput(1, windowWidth, windowHeight, &projection, false);
+
 	//-------------
 	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//------------ 
 		glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -119,16 +173,18 @@ int main(int argc, char ** argv) {
 		shader.Use();
 		glBindVertexArray(VAO);
 		//------------
-		float t = (float)glfwGetTime();
-		float greenValue = (sinf(4.0f*t) / 2.0f) + 0.5f;
-		shader.SetVec4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
-		shader.SetVec3f("offset", sinf(2.0f*t) * 0.5f, 0, 0);
-		//------------
-		glm::mat4 trans(1.0f);
-		trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f)*(sinf(t)*0.5f) + 1.0f);
-		trans = glm::rotate(trans, t, glm::vec3(1.0f, 1.0f, 1.0f));
-		shader.SetMat4f("transform", glm::value_ptr(trans));
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+		shader.SetMat4f("view", glm::value_ptr(view));
+		shader.SetMat4f("projection", glm::value_ptr(projection));
+
+		for (size_t i = 0; i < 10; i++) {
+			glm::mat4 model(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = (float)glfwGetTime() * 50.0f + 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			shader.SetMat4f("model", glm::value_ptr(model));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 	});
 	//-------------
 	auto endOp = new LambdaOp ([]() {
@@ -146,13 +202,13 @@ int main(int argc, char ** argv) {
 }
 
 void RegisterInput::Run() {
-	//Close Window
+	// Close Window
 	auto closeWindowOp = new LambdaOp([]() {
 		Glfw::GetInstance()->CloseWindow();
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, closeWindowOp);
 
-	//Polygon Mode
+	// Polygon Mode
 	//------------ GLFW_KEY_1
 	auto polygonModeFillOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -164,7 +220,7 @@ void RegisterInput::Run() {
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_2, polygonModeLineOp);
 
-	//Texture Warp
+	// Texture Warp
 	size_t info0 = GL_TEXTURE0 + textureID;
 	//------------ GLFW_KEY_3
 	auto textWarpReapeatOp = new InfoLambdaOp<size_t>("textWarpReapeatOp", info0, []() {
@@ -199,6 +255,23 @@ void RegisterInput::Run() {
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_6, textWarpClamp2BodderOp);
 
+	// Projection
+	Info1 info1 = { projection, (float)windowWidth , (float)windowHeight };
+	//------------ GLFW_KEY_7
+	auto perspectiveOp = new InfoLambdaOp<Info1>("perspectiveOp", info1, []() {
+		auto perspectiveOp = InfoLambdaOp<Info1>::GetFromStorage("perspectiveOp");
+		auto & info = perspectiveOp->GetInfo();
+		(*info.projection) = glm::perspective(glm::radians(45.0f), info.width / info.height, 0.1f, 100.0f);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_7, perspectiveOp);
+	//------------ GLFW_KEY_8
+	auto orthoOp = new InfoLambdaOp<Info1>("orthoOp", info1, []() {
+		auto orthoOp = InfoLambdaOp<Info1>::GetFromStorage("orthoOp");
+		auto & info = orthoOp->GetInfo();
+		(*info.projection) = glm::ortho(-1.0f, 1.0f, -info.height / info.width, info.height / info.width, 0.01f, 100.0f);
+	});
+	EventManager::GetInstance()->RegisterOp(GLFW_KEY_8, orthoOp);
+
 	//------------
 
 	cout << endl
@@ -208,5 +281,7 @@ void RegisterInput::Run() {
 		<< "* 4. Press '4' to set TEXTURE_WRAP[MIRRORED_REPEAT]" << endl
 		<< "* 5. Press '5' to set TEXTURE_WRAP[CLAMP_TO_EDGE]" << endl
 		<< "* 6. Press '6' to set TEXTURE_WRAP[CLAMP_TO_BORDER]" << endl
-		<< "* 7. Press 'ESC' to close exe" << endl << endl;
+		<< "* 7. Press '7' to set projection[perspective]" << endl
+		<< "* 8. Press '8' to set projection[ortho]" << endl
+		<< "* 9. Press 'ESC' to close exe" << endl << endl;
 }

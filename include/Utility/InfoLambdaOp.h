@@ -6,7 +6,6 @@
 #include <functional>
 
 namespace Ubpa{
-	//InfoLambdaOp
 	template<typename T>
 	class InfoLambdaOp : public LambdaOp {
 	public:

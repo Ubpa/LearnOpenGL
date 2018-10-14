@@ -22,6 +22,7 @@ void Glfw::Init(size_t width, size_t height, const char * title){
 	glfwSetKeyCallback(Glfw::GetInstance()->GetWindow(), [](GLFWwindow * window, int key, int scanCode, int state, int mods) {
 		Ubpa::EventManager::GetInstance()->Response(key);
 	});
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Glfw::Terminate() { glfwTerminate(); }

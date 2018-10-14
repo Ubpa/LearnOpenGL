@@ -4,6 +4,9 @@
 #include <Utility/Image.h>
 #include <Utility/Storage.h>
 #include <Utility/InfoLambdaOp.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace LOGL;
 using namespace std;
@@ -32,42 +35,81 @@ int main(int argc, char ** argv) {
 	string chapter = "01_Introduction";
 	string subchapter = "06_Coordinate";
 	//------------
-	size_t windowWidth = 1024, windowHeight = 768;
+	size_t windowWidth = 1024, windowHeight = 576;
 	string windowTitle = chapter + "/" + subchapter;
 	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
 	//------------
 	float vertices[] = {
-		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-			 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // 右上
-			 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // 右下
-			-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-			-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // 左上
+	-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
+
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
+	-0.5f,  0.5f,  0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+
+	-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f, -0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
+
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
+	 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
+	-0.5f,  0.5f,  0.5f, -0.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
 	};
-	size_t indices[] = { // 注意索引从0开始! 
-		0, 1, 3, // 第一个三角形
-		1, 2, 3  // 第二个三角形
+	//------------
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 	//------------
 	size_t VBO;
 	glGenBuffers(1, &VBO);
 	size_t VAO;
 	glGenVertexArrays(1, &VAO);
-	size_t EBO;
-	glGenBuffers(1, &EBO);
 	//------------
 	glBindVertexArray(VAO);
 	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	//------------
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 	//------------
 	size_t texture[2];
 	glGenTextures(2, texture);
@@ -110,8 +152,6 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture0", 0);
 	shader.SetInt("texture1", 1);
 	//------------
-	glm::mat4 model(1.0f);
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 view(1.0f);
 	// 注意，我们将矩阵向我们要进行移动场景的反方向移动。
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
@@ -123,7 +163,7 @@ int main(int argc, char ** argv) {
 	//-------------
 	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//------------ 
 		glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -133,10 +173,18 @@ int main(int argc, char ** argv) {
 		shader.Use();
 		glBindVertexArray(VAO);
 		//------------
-		shader.SetMat4f("model", model);
-		shader.SetMat4f("view", view);
-		shader.SetMat4f("projection", projection);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+		shader.SetMat4f("view", glm::value_ptr(view));
+		shader.SetMat4f("projection", glm::value_ptr(projection));
+
+		for(size_t i = 0; i < 10; i++){
+			glm::mat4 model(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = (float)glfwGetTime() * 50.0f + 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			shader.SetMat4f("model", glm::value_ptr(model));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 	});
 	//-------------
 	auto endOp = new LambdaOp ([]() {
@@ -220,7 +268,7 @@ void RegisterInput::Run() {
 	auto orthoOp = new InfoLambdaOp<Info1>("orthoOp", info1, []() {
 		auto orthoOp = InfoLambdaOp<Info1>::GetFromStorage("orthoOp");
 		auto & info = orthoOp->GetInfo();
-		(*info.projection) = glm::ortho(-1.0f, 1.0f, -info.height / info.width, info.height / info.width, 0.01f, 100.0f);
+		(*info.projection) = glm::ortho(-10.0f, 10.0f, -10 * info.height / info.width, 10 * info.height / info.width, 0.01f, 100.0f);
 	});
 	EventManager::GetInstance()->RegisterOp(GLFW_KEY_8, orthoOp);
 
