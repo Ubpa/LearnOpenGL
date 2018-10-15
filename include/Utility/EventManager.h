@@ -21,9 +21,9 @@ namespace Ubpa {
 		//------------
 		static EventManager * GetInstance();
 		//------------
-		void RegisterOp(size_t event, Ptr<Operation> & op);
-		void RegisterOp(size_t event, Operation * op);
-		void RegisterOp(size_t event, const std::function<void()> & op);
+		void Register(size_t event, Ptr<Operation> & op);
+		void Register(size_t event, Operation * op);
+		void Register(size_t event, const std::function<void()> & op);
 		void Response(size_t event);
 	private:
 		EventManager();

@@ -1,11 +1,14 @@
 #include "RegisterInput.h"
 
+#include "Defines.h"
+
 #include <GLFW/Glfw.h>
 #include <Utility/InfoLambdaOp.h>
 #include <Camera.h>
 
 using namespace Ubpa;
 using namespace LOGL;
+using namespace Define;
 using namespace std;
 
 void RegisterInput::Run() {
@@ -15,14 +18,14 @@ void RegisterInput::Run() {
 }
 
 void RegisterInput::RegisterMouse() {
-	EventManager::GetInstance()->RegisterOp(EventManager::MOUSE_MOUVE, [](){
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
+	EventManager::GetInstance()->Register(EventManager::MOUSE_MOUVE, [](){
+		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
 		auto xOffset = **Storage<float *>::GetInstance()->Get("mousePos_XOffset");
 		auto yOffset = **Storage<float *>::GetInstance()->Get("mousePos_YOffset");
 		mainCamera->ProcessMouseMovement(xOffset, yOffset);
 	});
-	EventManager::GetInstance()->RegisterOp(EventManager::MOUSE_SCROLL, []() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
+	EventManager::GetInstance()->Register(EventManager::MOUSE_SCROLL, []() {
+		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
 		auto mouseScroll_YOffset = **Storage<float *>::GetInstance()->Get("mouseScroll_YOffset");
 		mainCamera->ProcessMouseScroll(mouseScroll_YOffset);
 	});
@@ -31,114 +34,54 @@ void RegisterInput::RegisterMouse() {
 void RegisterInput::RegisterKey() {
 	// Close Window
 	auto closeWindowOp = new LambdaOp();
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_ESCAPE,
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_ESCAPE,
 		[]() { Glfw::GetInstance()->CloseWindow(); });
 
 
 	// Polygon Mode
 	//------------ GLFW_KEY_1
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_1,
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_1,
 		[]() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); });
 	//------------ GLFW_KEY_2
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_2,
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_2,
 		[]() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); });
 
 
-	// Texture Warp
-	size_t info0 = GL_TEXTURE0 + textureID;
-	//------------ GLFW_KEY_3
-	auto textWarpReapeatOp = new InfoLambdaOp<size_t>("textWarpReapeatOp", info0, []() {
-		auto textWarpReapeatOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpReapeatOp");
-		glBindTexture(GL_TEXTURE_2D, textWarpReapeatOp->GetInfo());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	});
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_3, textWarpReapeatOp);
-	//------------ GLFW_KEY_4
-	auto textWarpMirrorReapeatOp = new InfoLambdaOp<size_t>("textWarpMirrorReapeatOp", info0, []() {
-		auto textWarpMirrorReapeatOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpMirrorReapeatOp");
-		glBindTexture(GL_TEXTURE_2D, textWarpMirrorReapeatOp->GetInfo());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-	});
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_4, textWarpMirrorReapeatOp);
-	//------------ GLFW_KEY_5
-	auto textWarpClamp2EdgeOp = new InfoLambdaOp<size_t>("textWarpClamp2EdgeOp", info0, []() {
-		auto textWarpClamp2EdgeOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2EdgeOp");
-		glBindTexture(GL_TEXTURE_2D, textWarpClamp2EdgeOp->GetInfo());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	});
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_5, textWarpClamp2EdgeOp);
-	//------------ GLFW_KEY_6
-	auto textWarpClamp2BodderOp = new InfoLambdaOp<size_t>("textWarpClamp2BodderOp", info0, []() {
-		auto textWarpClamp2BodderOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2BodderOp");
-		glBindTexture(GL_TEXTURE_2D, textWarpClamp2BodderOp->GetInfo());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	});
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_6, textWarpClamp2BodderOp);
-
+	// Texture Warp : GLFW_KEY_3 ~ GLFW_KEY_6
+	for (size_t i = 0; i < 4; i++) {
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | (GLFW_KEY_3 + i), []() {
+			auto textureID = *Storage<size_t>::GetInstance()->Get(str_ChangeTexture);
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		});
+	}
 
 	// Projection
 	//------------ GLFW_KEY_7
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_7, 
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_7, 
 		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
+		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
 		mainCamera->SetPerspective();
 	});
 	//------------ GLFW_KEY_8
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD_PRESS | GLFW_KEY_8, 
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_8, 
 		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
+		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
 		mainCamera->SetOrtho();
 	});
 
 
 	// Move
-	//------------ GLFW_KEY_W
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_W,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_FORWARD, deltaTime);
-	});
-	//------------ GLFW_KEY_S
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_S,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_BACKWARD, deltaTime);
-	});
-	//------------ GLFW_KEY_A
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_A,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_LEFT, deltaTime);
-	});
-	//------------ GLFW_KEY_D
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_D,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_RIGHT, deltaTime);
-	});
-	//------------ GLFW_KEY_Q
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_Q,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_UP, deltaTime);
-	});
-	//------------ GLFW_KEY_E
-	EventManager::GetInstance()->RegisterOp(EventManager::KEYBOARD | GLFW_KEY_E,
-		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get("mainCamera");
-		auto deltaTime = **Storage<float *>::GetInstance()->Get("deltaTime");
-		mainCamera->ProcessKeyboard(Camera::MOVE_DOWN, deltaTime);
-	});
-
+	size_t moveKey[] = { GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E };
+	for (size_t i = 0; i < 6; i++) {
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD | moveKey[i],
+			[=]() {
+			auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
+			auto deltaTime = **Storage<float *>::GetInstance()->Get(str_DeltaTime);
+			mainCamera->ProcessKeyboard(Camera::ENUM_Movement(Camera::MOVE_FORWARD + i), deltaTime);
+		});
+	}
 }
 
 void RegisterInput::PrintInfo() {

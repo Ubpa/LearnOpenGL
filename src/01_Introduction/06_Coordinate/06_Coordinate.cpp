@@ -206,19 +206,19 @@ void RegisterInput::Run() {
 	auto closeWindowOp = new LambdaOp([]() {
 		Glfw::GetInstance()->CloseWindow();
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, closeWindowOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_ESCAPE, closeWindowOp);
 
 	// Polygon Mode
 	//------------ GLFW_KEY_1
 	auto polygonModeFillOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_1, polygonModeFillOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_1, polygonModeFillOp);
 	//------------ GLFW_KEY_2
 	auto polygonModeLineOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_2, polygonModeLineOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_2, polygonModeLineOp);
 
 	// Texture Warp
 	size_t info0 = GL_TEXTURE0 + textureID;
@@ -229,7 +229,7 @@ void RegisterInput::Run() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_3, textWarpReapeatOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_3, textWarpReapeatOp);
 	//------------ GLFW_KEY_4
 	auto textWarpMirrorReapeatOp = new InfoLambdaOp<size_t>("textWarpMirrorReapeatOp", info0, []() {
 		auto textWarpMirrorReapeatOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpMirrorReapeatOp");
@@ -237,7 +237,7 @@ void RegisterInput::Run() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_4, textWarpMirrorReapeatOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_4, textWarpMirrorReapeatOp);
 	//------------ GLFW_KEY_5
 	auto textWarpClamp2EdgeOp = new InfoLambdaOp<size_t>("textWarpClamp2EdgeOp", info0, []() {
 		auto textWarpClamp2EdgeOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2EdgeOp");
@@ -245,7 +245,7 @@ void RegisterInput::Run() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_5, textWarpClamp2EdgeOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_5, textWarpClamp2EdgeOp);
 	//------------ GLFW_KEY_6
 	auto textWarpClamp2BodderOp = new InfoLambdaOp<size_t>("textWarpClamp2BodderOp", info0, []() {
 		auto textWarpClamp2BodderOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2BodderOp");
@@ -253,7 +253,7 @@ void RegisterInput::Run() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_6, textWarpClamp2BodderOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_6, textWarpClamp2BodderOp);
 
 	// Projection
 	Info1 info1 = { projection, (float)windowWidth , (float)windowHeight };
@@ -263,14 +263,14 @@ void RegisterInput::Run() {
 		auto & info = perspectiveOp->GetInfo();
 		(*info.projection) = glm::perspective(glm::radians(45.0f), info.width / info.height, 0.1f, 100.0f);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_7, perspectiveOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_7, perspectiveOp);
 	//------------ GLFW_KEY_8
 	auto orthoOp = new InfoLambdaOp<Info1>("orthoOp", info1, []() {
 		auto orthoOp = InfoLambdaOp<Info1>::GetFromStorage("orthoOp");
 		auto & info = orthoOp->GetInfo();
 		(*info.projection) = glm::ortho(-10.0f, 10.0f, -10 * info.height / info.width, 10 * info.height / info.width, 0.01f, 100.0f);
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_8, orthoOp);
+	EventManager::GetInstance()->Register(GLFW_KEY_8, orthoOp);
 
 	//------------
 

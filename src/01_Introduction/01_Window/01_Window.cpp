@@ -42,11 +42,11 @@ int main(int argc, char ** argv) {
 }
 
 void registerInput() {
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_ESCAPE, []() {
+	EventManager::GetInstance()->Register(GLFW_KEY_ESCAPE, []() {
 		if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			Glfw::GetInstance()->CloseWindow();
 	});
-	EventManager::GetInstance()->RegisterOp(GLFW_KEY_1, []() { 
+	EventManager::GetInstance()->Register(GLFW_KEY_1, []() { 
 		if(Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
 			printf("press 1\n");
 	});

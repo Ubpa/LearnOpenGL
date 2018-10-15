@@ -8,20 +8,19 @@
 #include <Camera.h>
 
 #include "RegisterInput.h"
+#include "Defines.h"
 
 using namespace LOGL;
 using namespace std;
 using namespace Ubpa;
-
+using namespace Define;
 //------------
 
 int main(int argc, char ** argv) {
-	string chapter = "01_Introduction";
-	string subchapter = "07_Camera";
 	//------------ 窗口
 	size_t windowWidth = 1024, windowHeight = 576;
 	float ratioWH = (float)windowWidth / (float)windowHeight;
-	string windowTitle = chapter + "/" + subchapter;
+	string windowTitle = str_Chapter + "/" + str_Subchapter;
 	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
 	Glfw::GetInstance()->LockCursor();
 	//------------ 顶点数据
@@ -100,8 +99,8 @@ int main(int argc, char ** argv) {
 	size_t texture[2];
 	glGenTextures(2, texture);
 	string imgName[2] = {
-		string(ROOT_PATH) + "/data/textures/container.jpg",
-		string(ROOT_PATH) + "/data/textures/awesomeface.png"
+		string(ROOT_PATH) + str_Img_Container,
+		string(ROOT_PATH) + str_Img_Face
 	};
 	Image img[2];
 	GLenum mode[2] = { GL_RGB, GL_RGBA };
@@ -124,10 +123,11 @@ int main(int argc, char ** argv) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 		img[i].Free();
 	}
+	Storage<size_t>::GetInstance()->Register(str_ChangeTexture, GL_TEXTURE1);
 	//------------ 着色器
-	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
-	string vsF = prefix + subchapter + ".vs";
-	string fsF = prefix + subchapter + ".fs";
+	string prefix = string(ROOT_PATH) + "/data/shaders/" + str_Chapter + "/" + str_Subchapter + "/";
+	string vsF = prefix + str_Subchapter + ".vs";
+	string fsF = prefix + str_Subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
 	if (!shader.IsValid()) {
 		cout << "Shader is not Valid\n";
@@ -139,12 +139,12 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture1", 1);
 	//------------ 矩阵
 	Camera mainCamera(ratioWH, 0.1f, 100.0f, glm::vec3(0.0f,0.0f,4.0f));
-	Storage<Camera *>::GetInstance()->Register("mainCamera", &mainCamera);
+	Storage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	//------------ 输入注册
- 	auto registerInputOp = new RegisterInput(1, false);
+ 	auto registerInputOp = new RegisterInput(false);
 	//------------- 时间
 	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
-	Storage<float *>::GetInstance()->Register("deltaTime", &deltaTime);
+	Storage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
 	float lastFrame = 0.0f; // 上一帧的时间
 	auto timeOp = new LambdaOp([&]() {
 		float currentFrame = glfwGetTime();
