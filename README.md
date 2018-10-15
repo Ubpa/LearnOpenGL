@@ -13,7 +13,7 @@
 内容基于教程，代码为自行编写，主要目标如下
 
 - 熟悉OpenGL
-- 面向对象编程
+- 提高C++编程技巧
 - 锻炼CMake搭工程能力
 - 完善泛用的 Utility 代码
 
@@ -28,11 +28,13 @@
     -04_Texture
     -05_Transform
     -06_Croodinate
+    -07_Camera
   /LIBs
     /Utility
       -ArgManager
       -EventManager
       -File
+      -Header
       -Image
       -Operation
     -glad
@@ -64,4 +66,4 @@ cmake ..
 - 生成的`exe`会在`/bin`中
 
 - 生成的`lib`会在 `/lib/Gen `中
-- `*.fs`、`*.vs`会从`/src`中拷贝到`/data`中
+- `*.fs`、`*.vs`会从`/src`中拷贝到`/data`中（现已直接入库）

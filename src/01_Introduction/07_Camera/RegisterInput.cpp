@@ -4,7 +4,7 @@
 
 #include <GLFW/Glfw.h>
 #include <Utility/InfoLambdaOp.h>
-#include <Camera.h>
+#include <LOGL/Camera.h>
 
 using namespace Ubpa;
 using namespace LOGL;

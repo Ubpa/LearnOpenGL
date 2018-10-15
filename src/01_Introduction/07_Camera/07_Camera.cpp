@@ -4,8 +4,8 @@
 #include <Utility/Storage.h>
 #include <Utility/InfoLambdaOp.h>
 
-#include <Shader.h>
-#include <Camera.h>
+#include <LOGL/Shader.h>
+#include <LOGL/Camera.h>
 
 #include "RegisterInput.h"
 #include "Defines.h"

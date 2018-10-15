@@ -1,6 +1,6 @@
 #include <ROOT_PATH.h>
 #include <GLFW/Glfw.h>
-#include <Shader.h>
+#include <LOGL/Shader.h>
 #include <Utility/LambdaOp.h>
 
 using namespace LOGL;
