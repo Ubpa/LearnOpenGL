@@ -8,13 +8,12 @@ namespace Ubpa{
 	template<typename T>
 	class InfoLambdaOp : public LambdaOp {
 	public:
-		InfoLambdaOp(const std::string & ID, const T & info = T(), const std::function<void()> & op = []() {}, bool isHold = true);
+		InfoLambdaOp(const T & info = T(), const std::function<void()> & op = []() {}, bool isHold = true);
 		//------------
 		void SetInfo(const T & info);
 		T & GetInfo();
 	protected:
 		virtual ~InfoLambdaOp();
-		std::string ID;
 		T info;
 	private:
 		InfoLambdaOp(const InfoLambdaOp&) = default;
@@ -24,9 +23,8 @@ namespace Ubpa{
 	//------------
 
 	template<typename T>
-	InfoLambdaOp<T>::InfoLambdaOp(const std::string & ID, const T & info, const std::function<void()> & op, bool isHold)
-		:info(info), ID(ID), LambdaOp(op, isHold) {
-		Storage<Operation *>::GetInstance()->Register(ID, this);
+	InfoLambdaOp<T>::InfoLambdaOp(const T & info, const std::function<void()> & op, bool isHold)
+		:info(info), LambdaOp(op, isHold) {
 	}
 
 	template<typename T>
@@ -41,7 +39,6 @@ namespace Ubpa{
 
 	template<typename T>
 	InfoLambdaOp<T>::~InfoLambdaOp() {
-		Storage<Operation *>::GetInstance()->Unregister(ID);
 		printf("Delete InfoLambdaOp\n");
 	};
 }

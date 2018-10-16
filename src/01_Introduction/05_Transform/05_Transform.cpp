@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <Utility/InfoLambdaOp.h>
+#include <Utility/GStorage.h>
 
 using namespace LOGL;
 using namespace Ubpa;
@@ -104,12 +105,12 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture1", 1);
 	//------------
 	
-	auto registerInputOp = new RegisterInput(1, false);
+	auto registerInputOp = new RegisterInput(texture[1], false);
 	
 	//-------------
 	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//------------ 
 		glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -146,58 +147,62 @@ int main(int argc, char ** argv) {
 }
 
 void RegisterInput::Run() {
-	//Close Window
+	// Close Window
 	auto closeWindowOp = new LambdaOp([]() {
 		Glfw::GetInstance()->CloseWindow();
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_ESCAPE, closeWindowOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_ESCAPE, closeWindowOp);
 
-	//Polygon Mode
+	// Polygon Mode
 	//------------ GLFW_KEY_1
 	auto polygonModeFillOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_1, polygonModeFillOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_1, polygonModeFillOp);
 	//------------ GLFW_KEY_2
 	auto polygonModeLineOp = new LambdaOp([]() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_2, polygonModeLineOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_2, polygonModeLineOp);
 
-	//Texture Warp
-	size_t info0 = GL_TEXTURE0 + textureID;
+	// Texture Warp
+	size_t info0 = textureID;
 	//------------ GLFW_KEY_3
-	auto textWarpReapeatOp = new InfoLambdaOp<size_t>("textWarpReapeatOp", info0, []() {
-		auto textWarpReapeatOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpReapeatOp");
+	auto textWarpReapeatOp = new InfoLambdaOp<size_t>(info0, []() {
+		auto textWarpReapeatOp = *GStorage<InfoLambdaOp<size_t> *>::GetInstance()->GetPtr("textWarpReapeatOp");
 		glBindTexture(GL_TEXTURE_2D, textWarpReapeatOp->GetInfo());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_3, textWarpReapeatOp);
+	GStorage<InfoLambdaOp<size_t> *>::GetInstance()->Register("textWarpReapeatOp", textWarpReapeatOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_3, textWarpReapeatOp);
 	//------------ GLFW_KEY_4
-	auto textWarpMirrorReapeatOp = new InfoLambdaOp<size_t>("textWarpMirrorReapeatOp", info0, []() {
-		auto textWarpMirrorReapeatOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpMirrorReapeatOp");
+	auto textWarpMirrorReapeatOp = new InfoLambdaOp<size_t>(info0, []() {
+		auto textWarpMirrorReapeatOp = *GStorage<InfoLambdaOp<size_t> *>::GetInstance()->GetPtr("textWarpMirrorReapeatOp");
 		glBindTexture(GL_TEXTURE_2D, textWarpMirrorReapeatOp->GetInfo());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_4, textWarpMirrorReapeatOp);
+	GStorage<InfoLambdaOp<size_t> *>::GetInstance()->Register("textWarpMirrorReapeatOp", textWarpMirrorReapeatOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_4, textWarpMirrorReapeatOp);
 	//------------ GLFW_KEY_5
-	auto textWarpClamp2EdgeOp = new InfoLambdaOp<size_t>("textWarpClamp2EdgeOp", info0, []() {
-		auto textWarpClamp2EdgeOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2EdgeOp");
+	auto textWarpClamp2EdgeOp = new InfoLambdaOp<size_t>(info0, []() {
+		auto textWarpClamp2EdgeOp = *GStorage<InfoLambdaOp<size_t> *>::GetInstance()->GetPtr("textWarpClamp2EdgeOp");
 		glBindTexture(GL_TEXTURE_2D, textWarpClamp2EdgeOp->GetInfo());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_5, textWarpClamp2EdgeOp);
+	GStorage<InfoLambdaOp<size_t> *>::GetInstance()->Register("textWarpClamp2EdgeOp", textWarpClamp2EdgeOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_5, textWarpClamp2EdgeOp);
 	//------------ GLFW_KEY_6
-	auto textWarpClamp2BodderOp = new InfoLambdaOp<size_t>("textWarpClamp2BodderOp", info0, []() {
-		auto textWarpClamp2BodderOp = InfoLambdaOp<size_t>::GetFromStorage("textWarpClamp2BodderOp");
+	auto textWarpClamp2BodderOp = new InfoLambdaOp<size_t>(info0, []() {
+		auto textWarpClamp2BodderOp = *GStorage<InfoLambdaOp<size_t> *>::GetInstance()->GetPtr("textWarpClamp2BodderOp");
 		glBindTexture(GL_TEXTURE_2D, textWarpClamp2BodderOp->GetInfo());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_6, textWarpClamp2BodderOp);
+	GStorage<InfoLambdaOp<size_t> *>::GetInstance()->Register("textWarpClamp2BodderOp", textWarpClamp2BodderOp);
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_6, textWarpClamp2BodderOp);
 
 	//------------
 

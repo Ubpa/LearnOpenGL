@@ -88,7 +88,7 @@ int main(int argc, char ** argv) {
 
 	auto renderOp = new LambdaOp ([&]() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//------------ Red
 		glBindVertexArray(VAO[0]);
 		shaderRed.Use();
@@ -121,15 +121,15 @@ int main(int argc, char ** argv) {
 }
 
 void registerInput() {
-	EventManager::GetInstance()->Register(GLFW_KEY_ESCAPE, []() {
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_ESCAPE, []() {
 		if (Glfw::GetInstance()->GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			Glfw::GetInstance()->CloseWindow();
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_1, []() {
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_1, []() {
 		if (Glfw::GetInstance()->GetKey(GLFW_KEY_1) == GLFW_PRESS)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	});
-	EventManager::GetInstance()->Register(GLFW_KEY_2, []() {
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD | GLFW_KEY_2, []() {
 		if (Glfw::GetInstance()->GetKey(GLFW_KEY_2) == GLFW_PRESS)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	});
