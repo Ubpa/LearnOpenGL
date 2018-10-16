@@ -3,10 +3,6 @@
 
 #include <Utility/Operation.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 class RegisterInput : public Ubpa::Operation {
 public:
 	RegisterInput(bool isHold = true)

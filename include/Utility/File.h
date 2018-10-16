@@ -12,18 +12,23 @@ namespace Ubpa{
 			WRITE
 		};
 
-		File(const char * fileName, Mode mode);
+		File(const std::string & fileName, Mode mode);
 
 		~File();
 
 		bool Check(Mode mode);
 
-		int Printf(char* format, ...);
+		int Printf(const std::string & format, ...);
 
-		int Scanf(char * format, ...);
+		int Scanf(const std::string & format, ...);
 
 		std::string ReadLine();
+
 		std::string ReadAll();
+
+		bool IsEnd();
+
+		bool IsValid();
 
 	private:
 		std::string ModeToStr(Mode mode);

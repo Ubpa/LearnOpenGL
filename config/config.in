@@ -1,0 +1,1 @@
+RootPath = ${CMAKE_SOURCE_DIR};

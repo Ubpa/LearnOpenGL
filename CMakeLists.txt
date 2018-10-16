@@ -63,8 +63,9 @@ set (${PROJECT_NAME}_VERSION_MINOR 0)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
+configure_file(config/config.in ${CMAKE_SOURCE_DIR}/config/config.out)
 configure_file(config/ROOT_PATH.h.in config/ROOT_PATH.h)
-message(STATUS "${CMAKE_BINARY_DIR}/config")
+
 include_directories (
 	${PROJECT_SOURCE_DIR}/include
 	${CMAKE_BINARY_DIR}/config

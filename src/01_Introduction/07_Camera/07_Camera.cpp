@@ -1,11 +1,16 @@
 #include <ROOT_PATH.h>
 
 #include <Utility/Image.h>
-#include <Utility/Storage.h>
+#include <Utility/GStorage.h>
 #include <Utility/InfoLambdaOp.h>
+#include <Utility/Config.h>
 
 #include <LOGL/Shader.h>
 #include <LOGL/Camera.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "RegisterInput.h"
 #include "Defines.h"
@@ -16,57 +21,18 @@ using namespace Ubpa;
 using namespace Define;
 //------------
 
+Config * DoConfig();
+
 int main(int argc, char ** argv) {
+	Config * config = DoConfig();
+	if (config == NULL)
+		return 1;
+	string rootPath = *config->GetPtr("RootPath");
 	//------------ 窗口
-	size_t windowWidth = 1024, windowHeight = 576;
-	float ratioWH = (float)windowWidth / (float)windowHeight;
+	float ratioWH = (float)val_windowWidth / (float)val_windowHeight;
 	string windowTitle = str_Chapter + "/" + str_Subchapter;
-	Glfw::GetInstance()->Init(windowWidth, windowHeight, windowTitle.c_str());
+	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, windowTitle.c_str());
 	Glfw::GetInstance()->LockCursor();
-	//------------ 顶点数据
-	float vertices[] = {
-		-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,  1.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
-		 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
-		-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
-		-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,
-
-		-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
-		 0.5f,  0.5f,  0.5f,  1.5f,  1.5f,
-		-0.5f,  0.5f,  0.5f, -0.5f,  1.5f,
-		-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
-
-		-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
-		-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-		-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-		-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
-		-0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-
-		 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
-		 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-		 0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-		 0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-
-		-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-		 0.5f, -0.5f, -0.5f,  1.5f,  1.5f,
-		 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,  1.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f, -0.5f,  1.5f,
-
-		-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
-		 0.5f,  0.5f, -0.5f,  1.5f,  1.5f,
-		 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,  1.5f, -0.5f,
-		-0.5f,  0.5f,  0.5f, -0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f, -0.5f,  1.5f,
-	};
 	//------------ 模型数据
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
@@ -89,7 +55,7 @@ int main(int argc, char ** argv) {
 	glBindVertexArray(VAO);
 	//------------
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(data_vertices), data_vertices, GL_STATIC_DRAW);
 	//------------ 属性
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), NULL);
 	glEnableVertexAttribArray(0);
@@ -99,8 +65,8 @@ int main(int argc, char ** argv) {
 	size_t texture[2];
 	glGenTextures(2, texture);
 	string imgName[2] = {
-		string(ROOT_PATH) + str_Img_Container,
-		string(ROOT_PATH) + str_Img_Face
+		rootPath + str_Img_Container,
+		rootPath + str_Img_Face
 	};
 	Image img[2];
 	GLenum mode[2] = { GL_RGB, GL_RGBA };
@@ -123,9 +89,9 @@ int main(int argc, char ** argv) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 		img[i].Free();
 	}
-	Storage<size_t>::GetInstance()->Register(str_ChangeTexture, GL_TEXTURE1);
+	GStorage<int>::GetInstance()->Register(str_ChangeTexture, texture[1]);
 	//------------ 着色器
-	string prefix = string(ROOT_PATH) + "/data/shaders/" + str_Chapter + "/" + str_Subchapter + "/";
+	string prefix = rootPath + "/data/shaders/" + str_Chapter + "/" + str_Subchapter + "/";
 	string vsF = prefix + str_Subchapter + ".vs";
 	string fsF = prefix + str_Subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
@@ -139,12 +105,12 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture1", 1);
 	//------------ 矩阵
 	Camera mainCamera(ratioWH, 0.1f, 100.0f, glm::vec3(0.0f,0.0f,4.0f));
-	Storage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
+	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	//------------ 输入注册
  	auto registerInputOp = new RegisterInput(false);
 	//------------- 时间
 	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
-	Storage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
+	GStorage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
 	float lastFrame = 0.0f; // 上一帧的时间
 	auto timeOp = new LambdaOp([&]() {
 		float currentFrame = glfwGetTime();
@@ -192,5 +158,32 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
-//------------
-
+Config * DoConfig() {
+	printf("Try to read config.out\n");
+	string rootPath;
+	Config * config = new Config;
+	rootPath = string(ROOT_PATH);
+	printf("[1] First Try.\n");
+	config->Load(rootPath + "/config/config.out");
+	if (!config->IsValid()) {
+		rootPath = "../../..";
+		printf("[2] Second Try.\n");
+		config->Load(rootPath + "/config/config.out");
+		if (!config->IsValid()) {
+			rootPath = ".";
+			printf("[3] Third Try.\n");
+			config->Load(rootPath + "/config.out");
+			if (!config->IsValid()) {
+				printf(
+					"ERROR : Three Try All Fail\n"
+					"ERROR : RootPath is not valid.\n"
+					"Please change config/config.out 's value of RootPath and\n"
+					"run exe in correct place( original place or same palce with config.out ).\n");
+				return NULL;
+			}
+		}
+	}
+	printf("config.out read success\nRootPath is %s\n", config->GetPtr("RootPath")->c_str());
+	GStorage<Config *>::GetInstance()->Register(str_MainCamera, config);
+	return config;
+}

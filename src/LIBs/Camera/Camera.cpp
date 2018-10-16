@@ -7,7 +7,7 @@ const float Camera::NEAR_PLANE = 0.01f;
 const float Camera::FAR_PLANE = 100.0f;
 const float Camera::YAW = -90.0f;
 const float Camera::PITCH = 0.0f;
-const float Camera::SPEED = 5.0f;
+const float Camera::SPEED = 10.0f;
 const float Camera::SENSITIVITY = 0.05f;
 const float Camera::ZOOM = 45.0f;
 const Camera::ENUM_Projection Camera::PROJECTION_MODE = Camera::PROJECTION_PERSEPCTIVE;
@@ -105,7 +105,7 @@ glm::mat4 Camera::GetProjectionMatrix() {
 		return glm::perspective(glm::radians(Zoom), rationWH, nearPlane, farPlane);
 		break;
 	case LOGL::Camera::PROJECTION_ORTHO:
-		return glm::ortho(-Zoom, Zoom, -Zoom / rationWH, Zoom / rationWH, nearPlane, farPlane);
+		return glm::ortho(-Zoom/4.0f, Zoom/4.0f, -Zoom/4.0f / rationWH, Zoom/4.0f / rationWH, nearPlane, farPlane);
 		break;
 	default:
 		break;

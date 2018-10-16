@@ -1,6 +1,6 @@
 #include <GLFW/Glfw.h>
 
-#include <Utility/Storage.h>
+#include <Utility/GStorage.h>
 
 using namespace LOGL;
 using namespace Ubpa;
@@ -37,8 +37,8 @@ void Glfw::Init(size_t width, size_t height, const char * title){
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
 		static float lastX = xPos, lastY = yPos;
 		static float mousePos_XOffset, mousePos_YOffset;
-		Storage<float *>::GetInstance()->Register("mousePos_XOffset", &mousePos_XOffset);
-		Storage<float *>::GetInstance()->Register("mousePos_YOffset", &mousePos_YOffset);
+		GStorage<float *>::GetInstance()->Register("mousePos_XOffset", &mousePos_XOffset);
+		GStorage<float *>::GetInstance()->Register("mousePos_YOffset", &mousePos_YOffset);
 		//------------
 		mousePos_XOffset = xPos - lastX;
 		mousePos_YOffset = lastY - yPos;
@@ -49,7 +49,7 @@ void Glfw::Init(size_t width, size_t height, const char * title){
 	//------------
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
 		static float mouseScroll_YOffset;
-		Storage<float *>::GetInstance()->Register("mouseScroll_YOffset", &mouseScroll_YOffset);
+		GStorage<float *>::GetInstance()->Register("mouseScroll_YOffset", &mouseScroll_YOffset);
 		//------------
 		mouseScroll_YOffset = yOffset;
 		EventManager::GetInstance()->Response(EventManager::MOUSE_SCROLL);

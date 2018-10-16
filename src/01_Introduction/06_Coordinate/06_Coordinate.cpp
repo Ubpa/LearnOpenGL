@@ -2,7 +2,7 @@
 #include <GLFW/Glfw.h>
 #include <LOGL/Shader.h>
 #include <Utility/Image.h>
-#include <Utility/Storage.h>
+#include <Utility/GStorage.h>
 #include <Utility/InfoLambdaOp.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

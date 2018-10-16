@@ -5,7 +5,7 @@ using namespace std;
 using namespace LOGL;
 using namespace Ubpa;
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath) {
 	valid = true;
 	File vsF(vertexPath, File::Mode::READ);
 	File fsF(fragmentPath, File::Mode::READ);
@@ -15,7 +15,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 		cout << vertexPath << " or " << fragmentPath << " read failed.\n";
 		return;
 	}
-	const char* vsCStr = vsStr.c_str();
+	const char * vsCStr = vsStr.c_str();
 	const char * fsCStr = fsStr.c_str();
 	//------------
 	// vertex shader

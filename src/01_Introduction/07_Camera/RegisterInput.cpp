@@ -2,9 +2,15 @@
 
 #include "Defines.h"
 
+#include <Utility/GStorage.h>
+
 #include <GLFW/Glfw.h>
-#include <Utility/InfoLambdaOp.h>
+#include <Utility/LambdaOp.h>
 #include <LOGL/Camera.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace Ubpa;
 using namespace LOGL;
@@ -19,14 +25,14 @@ void RegisterInput::Run() {
 
 void RegisterInput::RegisterMouse() {
 	EventManager::GetInstance()->Register(EventManager::MOUSE_MOUVE, [](){
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
-		auto xOffset = **Storage<float *>::GetInstance()->Get("mousePos_XOffset");
-		auto yOffset = **Storage<float *>::GetInstance()->Get("mousePos_YOffset");
+		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
+		auto xOffset = **GStorage<float *>::GetInstance()->GetPtr("mousePos_XOffset");
+		auto yOffset = **GStorage<float *>::GetInstance()->GetPtr("mousePos_YOffset");
 		mainCamera->ProcessMouseMovement(xOffset, yOffset);
 	});
 	EventManager::GetInstance()->Register(EventManager::MOUSE_SCROLL, []() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
-		auto mouseScroll_YOffset = **Storage<float *>::GetInstance()->Get("mouseScroll_YOffset");
+		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
+		auto mouseScroll_YOffset = **GStorage<float *>::GetInstance()->GetPtr("mouseScroll_YOffset");
 		mainCamera->ProcessMouseScroll(mouseScroll_YOffset);
 	});
 }
@@ -36,8 +42,7 @@ void RegisterInput::RegisterKey() {
 	auto closeWindowOp = new LambdaOp();
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_ESCAPE,
 		[]() { Glfw::GetInstance()->CloseWindow(); });
-
-
+	
 	// Polygon Mode
 	//------------ GLFW_KEY_1
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_1,
@@ -49,11 +54,12 @@ void RegisterInput::RegisterKey() {
 
 	// Texture Warp : GLFW_KEY_3 ~ GLFW_KEY_6
 	for (size_t i = 0; i < 4; i++) {
-		EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | (GLFW_KEY_3 + i), []() {
-			auto textureID = *Storage<size_t>::GetInstance()->Get(str_ChangeTexture);
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | (GLFW_KEY_3 + i), [=]() {
+			auto textureID = *GStorage<int>::GetInstance()->GetPtr(str_ChangeTexture);
 			glBindTexture(GL_TEXTURE_2D, textureID);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			int mode = textureWarpMode[i];
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
 		});
 	}
 
@@ -61,13 +67,13 @@ void RegisterInput::RegisterKey() {
 	//------------ GLFW_KEY_7
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_7, 
 		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
+		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
 		mainCamera->SetPerspective();
 	});
 	//------------ GLFW_KEY_8
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_8, 
 		[]() {
-		auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
+		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
 		mainCamera->SetOrtho();
 	});
 
@@ -77,8 +83,8 @@ void RegisterInput::RegisterKey() {
 	for (size_t i = 0; i < 6; i++) {
 		EventManager::GetInstance()->Register(EventManager::KEYBOARD | moveKey[i],
 			[=]() {
-			auto mainCamera = *Storage<Camera *>::GetInstance()->Get(str_MainCamera);
-			auto deltaTime = **Storage<float *>::GetInstance()->Get(str_DeltaTime);
+			auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
+			auto deltaTime = **GStorage<float *>::GetInstance()->GetPtr(str_DeltaTime);
 			mainCamera->ProcessKeyboard(Camera::ENUM_Movement(Camera::MOVE_FORWARD + i), deltaTime);
 		});
 	}

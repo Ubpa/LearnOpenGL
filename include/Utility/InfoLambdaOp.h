@@ -2,7 +2,6 @@
 #define _INFO_LAMBDA_OP_H_
 
 #include <Utility/LambdaOp.h>
-#include <Utility/Storage.h>
 #include <functional>
 
 namespace Ubpa{
@@ -13,8 +12,6 @@ namespace Ubpa{
 		//------------
 		void SetInfo(const T & info);
 		T & GetInfo();
-		//------------
-		static InfoLambdaOp<T> * GetFromStorage(const std::string & ID);
 	protected:
 		virtual ~InfoLambdaOp();
 		std::string ID;
@@ -47,13 +44,5 @@ namespace Ubpa{
 		Storage<Operation *>::GetInstance()->Unregister(ID);
 		printf("Delete InfoLambdaOp\n");
 	};
-
-	template<typename T>
-	InfoLambdaOp<T> * InfoLambdaOp<T>::GetFromStorage(const std::string & ID) {
-		auto target = Storage<Operation *>::GetInstance()->Get(ID);
-		if (target == NULL)
-			return NULL;
-		return dynamic_cast<InfoLambdaOp<T> *>(*target);
-	}
 }
 #endif // !_INFO_LAMBDA_OP_H_
