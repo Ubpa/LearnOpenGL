@@ -54,8 +54,6 @@ namespace LOGL {
 		static const float FAR_PLANE;
 		static const float YAW;
 		static const float PITCH;
-		static const float SPEED;
-		static const float SENSITIVITY;
 		static const float ZOOM;
 		static const ENUM_Projection PROJECTION_MODE;
 

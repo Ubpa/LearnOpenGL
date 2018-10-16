@@ -1,5 +1,7 @@
 #include <Utility/Config.h>
 #include <regex>
+#include <sstream>
+#include <vector>
 
 using namespace Ubpa;
 using namespace std;
@@ -34,29 +36,76 @@ bool Config::IsValid() {
 }
 
 bool Config::Decode(const string & data) {
-	string blank = "(?:\\s*)";
-	string lval = "(\\w+)";
-	string rval = "(\\S+)";
-	string exp = "(?:" + lval + blank + "=" + blank + rval + blank + ";)";
+	string strT = "(string)";
+	string intT = "(int)";
+	string floatT = "(float)";
+	string blank = "(?:[ \t]*)";
+	string vName = "([_a-zA-Z][_0-9a-zA-Z]*)";
+	string strVal = "(?:\"([^\"]*)\")";
+	string strExp = "(?:" + strT + blank + vName + blank + "=" + blank + strVal + blank + ";)";
+	string intVal = "((?:[1-9][0-9]*)|(?:0))";
+	string intExp = "(?:" + intT + blank + vName + blank + "=" + blank + intVal + blank + ";)";
+	string floatVal = "((?:(?:0)|(?:[1-9][0-9]*))(?:(?:\\.[0-9]*)?))";
+	string floatExp = "(?:" + floatT + blank + vName + blank + "=" + blank + floatVal + blank + ";)";
+	string allExp = "(?:" + strExp + "|" + intExp + "|" + floatExp + ")";
 	string note = "(?:\\#[^\\n]*)";
-	string line = "(?:" + blank + exp + "?" + blank + note + "?)";
-	string neLine = "(?:" + line + "\\n)";
-	string eLine = "(?:" + line + "|\\n)";
-	string code = neLine + "*" + eLine;
-	regex pattern(code);
-	
+	string line = "(?:" + blank + "(?:" + allExp + "?)" + blank + "(?:" + note + "?)" + "\\n)";
+
+	regex pattern(line);
+
 	smatch result;
 	
 	if (!regex_match(data, result, pattern)) {
 		printf("ERROR : The format is not correct.\n");
 		return false;
 	}
-
-	for (size_t i = 1; i + 1 < result.size(); i += 2)
-		directory.Register(result[i].str(), result[i + 1].str());
+	
+	vector<int> idxVec;
+	for (size_t i = 1; i < result.size(); i++) {
+		if (result[i].str().size() > 0) {
+			printf("%s\n", result[i].str().c_str());
+			idxVec.push_back(i);
+		}
+	}
+	printf("num:%d\n", idxVec.size());
+	for (size_t i = 0; i < idxVec.size(); i += 3) {
+		size_t idx = idxVec[i];
+		string type = result[idxVec[i]].str();
+		string varName = result[idxVec[i + 1]].str();
+		string valueStr = result[idxVec[i + 2]].str();
+		if (type == "string") {
+			printf("Config: %s = %s\n", varName.c_str(), valueStr.c_str());
+			strDirectory.Register(varName, valueStr);
+		}
+		else if (type == "float") {
+			istringstream iss(valueStr);
+			float val;
+			iss >> val;
+			printf("Config: %s = %f\n", varName.c_str(), val);
+			floatDirectory.Register(varName, val);
+		}
+		else if (type == "int") {
+			istringstream iss(valueStr);
+			int val;
+			iss >> val;
+			printf("Config: %s = %d\n", varName.c_str(), val);
+			intDirectory.Register(varName, val);
+		}
+		else {
+			printf("Error Type [%s] is unknown\nvarName : %s\nvalue : %s\n",
+				result[idxVec[i]].str().c_str(), result[i+1].str().c_str(), result[i+2].str().c_str());
+		}
+	}
 	return true;
 }
 
-string * Config::GetPtr(const std::string & id) {
-	return directory.GetPtr(id);
+
+string * Config::GetStrPtr(const std::string & id) {
+	return strDirectory.GetPtr(id);
+}
+float * Config::GetFloatPtr(const std::string & id) {
+	return floatDirectory.GetPtr(id);
+}
+int * Config::GetIntPtr(const std::string & id) {
+	return intDirectory.GetPtr(id);
 }

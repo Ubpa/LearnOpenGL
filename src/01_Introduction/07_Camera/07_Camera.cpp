@@ -27,7 +27,7 @@ int main(int argc, char ** argv) {
 	Config * config = DoConfig();
 	if (config == NULL)
 		return 1;
-	string rootPath = *config->GetPtr("RootPath");
+	string rootPath = *config->GetStrPtr("RootPath");
 	//------------ ´°¿Ú
 	float ratioWH = (float)val_windowWidth / (float)val_windowHeight;
 	string windowTitle = str_Chapter + "/" + str_Subchapter;
@@ -183,7 +183,7 @@ Config * DoConfig() {
 			}
 		}
 	}
-	printf("config.out read success\nRootPath is %s\n", config->GetPtr("RootPath")->c_str());
+	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
 	GStorage<Config *>::GetInstance()->Register(str_MainCamera, config);
 	return config;
 }

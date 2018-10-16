@@ -13,6 +13,7 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath)
 	string fsStr = fsF.ReadAll();
 	if (vsStr.size() == 0 || fsStr.size() == 0) {
 		cout << vertexPath << " or " << fragmentPath << " read failed.\n";
+		valid = false;
 		return;
 	}
 	const char * vsCStr = vsStr.c_str();

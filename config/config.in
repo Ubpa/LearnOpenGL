@@ -1,1 +1,4 @@
-RootPath = ${CMAKE_SOURCE_DIR};
+string RootPath = "${CMAKE_SOURCE_DIR}";
+#######################################
+float CameraMoveSpeed = 5;
+float CameraRotateSensitivity = 0.02;

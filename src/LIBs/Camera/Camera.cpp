@@ -1,25 +1,35 @@
 #include <LOGL/Camera.h>
 
+#include <Utility/Config.h>
+#include <Utility/GStorage.h>
+
+#include <Utility/Config.h>
+
+#include <LOGL/CommonDefine.h>
+
 using namespace LOGL;
+using namespace Define;
+using namespace Ubpa;
 
 const float Camera::RATIO_WH = 1.0f;
 const float Camera::NEAR_PLANE = 0.01f;
 const float Camera::FAR_PLANE = 100.0f;
 const float Camera::YAW = -90.0f;
 const float Camera::PITCH = 0.0f;
-const float Camera::SPEED = 10.0f;
-const float Camera::SENSITIVITY = 0.05f;
 const float Camera::ZOOM = 45.0f;
 const Camera::ENUM_Projection Camera::PROJECTION_MODE = Camera::PROJECTION_PERSEPCTIVE;
 
 // Constructor with vectors
 Camera::Camera(float rationWH, float nearPlane, float farPlane, glm::vec3 position, glm::vec3 up, float yaw, float pitch, ENUM_Projection projectionMode)
-	: rationWH(rationWH), nearPlane(nearPlane), farPlane(farPlane), Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM), projectionMode(projectionMode){
+	: rationWH(rationWH), nearPlane(nearPlane), farPlane(farPlane), Front(glm::vec3(0.0f, 0.0f, -1.0f)), Zoom(ZOOM), projectionMode(projectionMode) {
 	//------------
 	Position = position;
 	WorldUp = up;
 	Yaw = yaw;
 	Pitch = pitch;
+	auto mainConfig = *GStorage<Config *>::GetInstance()->GetPtr(str_MainConfig);
+	MovementSpeed = *mainConfig->GetFloatPtr(config_CameraMoveSpeed);
+	MouseSensitivity = *mainConfig->GetFloatPtr(config_CameraRotateSensitivity);
 	updateCameraVectors();
 }
 
@@ -32,7 +42,7 @@ void Camera::SetOrtho() {
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch){
+void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 	xoffset *= MouseSensitivity;
 	yoffset *= MouseSensitivity;
 
@@ -53,7 +63,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
 }
 
 // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-void Camera::ProcessMouseScroll(float yoffset){
+void Camera::ProcessMouseScroll(float yoffset) {
 	if (Zoom >= 1.0f && Zoom <= 45.0f)
 		Zoom -= yoffset;
 	else if (Zoom <= 1.0f)
@@ -63,7 +73,7 @@ void Camera::ProcessMouseScroll(float yoffset){
 }
 
 // Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-void Camera::ProcessKeyboard(ENUM_Movement direction, float deltaTime){
+void Camera::ProcessKeyboard(ENUM_Movement direction, float deltaTime) {
 	float velocity = MovementSpeed * deltaTime;
 	if (direction == MOVE_FORWARD)
 		Position += Front * velocity;
@@ -80,12 +90,12 @@ void Camera::ProcessKeyboard(ENUM_Movement direction, float deltaTime){
 }
 
 // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-glm::mat4 Camera::GetViewMatrix(){
+glm::mat4 Camera::GetViewMatrix() {
 	return glm::lookAt(Position, Position + Front, Up);
 }
 
 // Calculates the front vector from the Camera's (updated) Euler Angles
-void Camera::updateCameraVectors(){
+void Camera::updateCameraVectors() {
 	// Calculate the new Front vector
 	glm::vec3 front;
 	front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
@@ -105,7 +115,7 @@ glm::mat4 Camera::GetProjectionMatrix() {
 		return glm::perspective(glm::radians(Zoom), rationWH, nearPlane, farPlane);
 		break;
 	case LOGL::Camera::PROJECTION_ORTHO:
-		return glm::ortho(-Zoom/4.0f, Zoom/4.0f, -Zoom/4.0f / rationWH, Zoom/4.0f / rationWH, nearPlane, farPlane);
+		return glm::ortho(-Zoom / 4.0f, Zoom / 4.0f, -Zoom / 4.0f / rationWH, Zoom / 4.0f / rationWH, nearPlane, farPlane);
 		break;
 	default:
 		break;

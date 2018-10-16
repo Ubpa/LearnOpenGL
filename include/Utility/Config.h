@@ -10,12 +10,16 @@ namespace Ubpa {
 		Config();
 		Config(const std::string & fileName);
 		bool Load(const std::string & fileName);
-		std::string * GetPtr(const std::string & id);
+		std::string * GetStrPtr(const std::string & id);
+		float * GetFloatPtr(const std::string & id);
+		int * GetIntPtr(const std::string & id);
 		bool IsValid();
 	private:
 		bool Config::Decode(const std::string & data);
 		//------------
-		LStorage<std::string> directory;
+		LStorage<std::string> strDirectory;
+		LStorage<float> floatDirectory;
+		LStorage<int> intDirectory;
 		bool valid;
 	};
 }
