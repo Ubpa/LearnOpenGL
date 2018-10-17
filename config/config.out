@@ -21,7 +21,7 @@
 #----------------------------------------------
 
 # 根目录
-string RootPath = "C:/UbpaDoc/CS/GithubRepository/LearnOpenGL";
+string RootPath = "D:/CS/ComputerGraphics/OpenGL/LearnOpenGL/Code";
 
 # 相机移动速度, 参考值 10
 float CameraMoveSpeed = 20;

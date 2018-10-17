@@ -22,14 +22,4 @@ set(STR_TARGET_LIBS "glfw3.lib glad Image Operation EventManager Glfw Shader Con
 
 SETUP_PROJECT(${MODE} ${TARGET_NAME} ${STR_TARGET_SOURCES} ${STR_TARGET_LIBS})
 
-# copy shader files to build directory
-file(GLOB SHADERS
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.vs"
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.fs"
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.gs"
-)
-
-foreach(SHADER ${SHADERS})
-	string(REGEX MATCH "([^/]*)$" TMP ${SHADER})
-	add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} "${CMAKE_SOURCE_DIR}/data/shaders/${FOLDER_NAME}/${DIRNAME}/${TMP}")
-endforeach(SHADER)
+INSTALL_SHADERS()

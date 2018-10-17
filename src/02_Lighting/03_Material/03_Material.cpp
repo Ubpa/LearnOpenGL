@@ -58,7 +58,6 @@ int main(int argc, char ** argv) {
 
 	size_t sphereVertexVBO;
 	glGenBuffers(1, &sphereVertexVBO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, sphereVertexVBO);
 	glBufferData(GL_ARRAY_BUFFER, sphere.GetVertexArrSize(), sphere.GetVertexArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
@@ -67,8 +66,7 @@ int main(int argc, char ** argv) {
 	size_t sphereNormalVBO;
 	glGenBuffers(1, &sphereNormalVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereNormalVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetVertexArrSize(), sphere.GetVertexArr(), GL_STATIC_DRAW);
-
+	glBufferData(GL_ARRAY_BUFFER, sphere.GetNormalArrSize(), sphere.GetNormalArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
@@ -90,6 +88,28 @@ int main(int argc, char ** argv) {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
+	//------------ 纹理
+	size_t texture0;
+	glGenTextures(1, &texture0);
+	string imgName = rootPath + str_Img_Face;
+	Image img0;
+	GLenum mode = GL_RGBA;
+	bool flip = true;
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	// 为当前绑定的纹理对象设置环绕、过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	img0.Load(imgName.c_str(), flip);
+	if (!img0.IsValid()) {
+		cout << "Failed to load texture[" << imgName << "]\n";
+		return 1;
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img0.GetWidth(), img0.GetHeight(), 0, mode, GL_UNSIGNED_BYTE, img0.GetData());
+	// 为当前绑定的纹理自动生成所有需要的多级渐远纹理。
+	glGenerateMipmap(GL_TEXTURE_2D);
+	img0.Free();
 	//------------ 光源模型
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 	//------------ 光源着色器
@@ -101,7 +121,9 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 	//------------ 相机
-	Camera mainCamera(ratioWH, 0.1f, 100.0f, glm::vec3(0.0f, 0.0f, 4.0f));
+	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
+	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
+	Camera mainCamera(ratioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 4.0f));
 	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	//------------ 光照着色器
 	string lighting_vs = rootPath + str_Lighting_vs;
@@ -141,6 +163,9 @@ int main(int argc, char ** argv) {
 	//------------ 渲染正方体模型
 	auto cubeOp = new LambdaOp([&]() {
 		lightingShader.Use();
+		auto lightPosPtr = GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightPos);
+		if (lightPosPtr != NULL)
+			lightingShader.SetVec3f("light.position", *lightPosPtr);
 		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
 		glBindVertexArray(VAO);
 		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
@@ -157,6 +182,9 @@ int main(int argc, char ** argv) {
 	auto sphereOp = new LambdaOp([&]() {
 		lightingShader.Use();
 		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
+		auto lightPosPtr = GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightPos);
+		if (lightPosPtr != NULL)
+			lightingShader.SetVec3f("light.position", *lightPosPtr);
 		glm::vec3 lightColor;
 		lightColor.x = 0.5f + 0.5f*sinf(glfwGetTime() * 2.0f);
 		lightColor.y = 0.5f + 0.5f*sinf(glfwGetTime() * 0.7f);
@@ -190,7 +218,7 @@ int main(int argc, char ** argv) {
 		lightModel = glm::rotate(lightModel, 0.5f * t, glm::vec3(0.0f,1.0f,0.0f));
 		lightModel = glm::translate(lightModel, lightPos);
 		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-
+		GStorage<glm::vec3>::GetInstance()->Register(str_LightPos, glm::vec3(lightModel[3].x, lightModel[3].y, lightModel[3].z));
 		lightShader.SetMat4f("model", lightModel);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	});
@@ -238,6 +266,7 @@ Config * DoConfig() {
 			}
 		}
 	}
+	*config->GetStrPtr("RootPath") = rootPath;
 	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
 	GStorage<Config *>::GetInstance()->Register(str_MainCamera, config);
 	return config;

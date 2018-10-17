@@ -16,11 +16,13 @@ Sphere::Sphere(size_t n)
 		float u = inc * i;
 		for (int j = 0; j <= n; j++) {
 			float v = inc * j;
-			float theta = PI * u;
+			float theta = PI * (1-u);
 			float phi = 2 * PI * v;
-			vertexArr->At(i*(n + 1) + j, 0) = sinf(theta) * cosf(phi);
-			vertexArr->At(i*(n + 1) + j, 1) = sinf(theta) * sinf(phi);
-			vertexArr->At(i*(n + 1) + j, 2) = cosf(theta);
+			vertexArr->At(i*(n + 1) + j, 0) = sinf(theta) * sinf(phi);
+			vertexArr->At(i*(n + 1) + j, 1) = cosf(theta);
+			vertexArr->At(i*(n + 1) + j, 2) = sinf(theta) * cosf(phi);
+			texcoordArr->At(i*(n + 1) + j, 0) = v;
+			texcoordArr->At(i*(n + 1) + j, 1) = u;
 		}
 	}
 	//------------

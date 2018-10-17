@@ -1,15 +1,6 @@
 #include <LOGL/Camera.h>
 
-#include <Utility/Config.h>
-#include <Utility/GStorage.h>
-
-#include <Utility/Config.h>
-
-#include <LOGL/CommonDefine.h>
-
 using namespace LOGL;
-using namespace Define;
-using namespace Ubpa;
 
 const float Camera::RATIO_WH = 1.0f;
 const float Camera::NEAR_PLANE = 0.01f;
@@ -20,16 +11,15 @@ const float Camera::ZOOM = 45.0f;
 const Camera::ENUM_Projection Camera::PROJECTION_MODE = Camera::PROJECTION_PERSEPCTIVE;
 
 // Constructor with vectors
-Camera::Camera(float rationWH, float nearPlane, float farPlane, glm::vec3 position, glm::vec3 up, float yaw, float pitch, ENUM_Projection projectionMode)
+Camera::Camera(float rationWH, float moveSpeed, float rotateSpeed, glm::vec3 position, float nearPlane, float farPlane, glm::vec3 up, float yaw, float pitch, ENUM_Projection projectionMode)
 	: rationWH(rationWH), nearPlane(nearPlane), farPlane(farPlane), Front(glm::vec3(0.0f, 0.0f, -1.0f)), Zoom(ZOOM), projectionMode(projectionMode) {
 	//------------
 	Position = position;
 	WorldUp = up;
 	Yaw = yaw;
 	Pitch = pitch;
-	auto mainConfig = *GStorage<Config *>::GetInstance()->GetPtr(str_MainConfig);
-	MovementSpeed = *mainConfig->GetFloatPtr(config_CameraMoveSpeed);
-	MouseSensitivity = *mainConfig->GetFloatPtr(config_CameraRotateSensitivity);
+	MovementSpeed = moveSpeed;
+	MouseSensitivity = rotateSpeed;
 	updateCameraVectors();
 }
 

@@ -102,7 +102,9 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture0", 0);
 	shader.SetInt("texture1", 1);
 	//------------ ¾ØÕó
-	Camera mainCamera(ratioWH, 0.1f, 100.0f, glm::vec3(0.0f,0.0f,4.0f));
+	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
+	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
+	Camera mainCamera(ratioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f,0.0f,4.0f));
 	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	//------------ ÊäÈë×¢²á
  	auto registerInputOp = new RegisterInput(false);
@@ -181,6 +183,7 @@ Config * DoConfig() {
 			}
 		}
 	}
+	*config->GetStrPtr("RootPath") = rootPath;
 	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
 	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
 	return config;

@@ -45,12 +45,14 @@ int main(int argc, char ** argv) {
 	glGenBuffers(1, &VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeData), cubeData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeData_PNT), cubeData_PNT, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0 * sizeof(float)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 	//------------ 球
 	size_t sphereVAO;
 	glGenVertexArrays(1, &sphereVAO);
@@ -58,7 +60,6 @@ int main(int argc, char ** argv) {
 
 	size_t sphereVertexVBO;
 	glGenBuffers(1, &sphereVertexVBO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, sphereVertexVBO);
 	glBufferData(GL_ARRAY_BUFFER, sphere.GetVertexArrSize(), sphere.GetVertexArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
@@ -67,10 +68,16 @@ int main(int argc, char ** argv) {
 	size_t sphereNormalVBO;
 	glGenBuffers(1, &sphereNormalVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereNormalVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetVertexArrSize(), sphere.GetVertexArr(), GL_STATIC_DRAW);
-
+	glBufferData(GL_ARRAY_BUFFER, sphere.GetNormalArrSize(), sphere.GetNormalArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	size_t sphereTexCoordsVBO;
+	glGenBuffers(1, &sphereTexCoordsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereTexCoordsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sphere.GetTexcoordArrSize(), sphere.GetTexcoordArr(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	size_t sphereEBO;
 	glGenBuffers(1, &sphereEBO);
@@ -90,11 +97,32 @@ int main(int argc, char ** argv) {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
-	//------------ 光源模型
-	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-	glm::mat4 lightModel = glm::mat4(1.0f);
-	lightModel = glm::translate(lightModel, lightPos);
-	lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+	//------------ 纹理
+	size_t texture[2];
+	glGenTextures(2, texture);
+	string imgName[2] = {
+		rootPath + str_Img_Container2,
+		rootPath + str_Img_Earth
+	};
+	Image img[2];
+	GLenum mode[2] = { GL_RGBA, GL_RGB };
+	bool flip[2] = { false, true };
+	//-------------
+	for (size_t i = 0; i < 2; i++) {
+		glBindTexture(GL_TEXTURE_2D, texture[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		img[i].Load(imgName[i].c_str(), flip[i]);
+		if (!img[i].IsValid()) {
+			cout << "Failed to load texture[" << imgName[i] << "]\n";
+			return 1;
+		}
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img[i].GetWidth(), img[i].GetHeight(), 0, mode[i], GL_UNSIGNED_BYTE, img[i].GetData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+		img[i].Free();
+	}
 	//------------ 光源着色器
 	string light_vs = rootPath + str_Light_vs;
 	string light_fs = rootPath + str_Light_fs;
@@ -116,11 +144,16 @@ int main(int argc, char ** argv) {
 		cout << "lightingShader is not Valid\n";
 		return 1;
 	}
-	lightingShader.Use();
-	lightingShader.SetVec3f("objectColor", 1.0f, 0.5f, 0.31f);
-	lightingShader.SetVec3f("lightColor", 1.0f, 1.0f, 1.0f);
-	lightingShader.SetFloat("ambientStrength", 0.1f);
-	lightingShader.SetVec3f("lightPos", lightPos);
+	lightingShader.Use(); 
+	//材质
+	lightingShader.SetVec3f("material.ambient", 1.0f, 0.5f, 0.31f);
+	lightingShader.SetVec3f("material.diffuse", 1.0f, 0.5f, 0.31f);
+	lightingShader.SetVec3f("material.specular", 0.5f, 0.5f, 0.5f);
+	lightingShader.SetFloat("material.shininess", 32.0f);
+	//光源
+	lightingShader.SetVec3f("light.ambient", 0.2f, 0.2f, 0.2f);
+	lightingShader.SetVec3f("light.diffuse", 0.8f, 0.8f, 0.8f); // 将光照调暗了一些以搭配场景
+	lightingShader.SetVec3f("light.specular", 1.0f, 1.0f, 1.0f);
 	//------------ 输入
 	auto registerInputOp = new RegisterInput(false);
 	//------------- 时间
@@ -139,33 +172,69 @@ int main(int argc, char ** argv) {
 	});
 	//------------ 渲染正方体模型
 	auto cubeOp = new LambdaOp([&]() {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
 		lightingShader.Use();
+		auto lightPosPtr = GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightPos);
+		if (lightPosPtr != NULL)
+			lightingShader.SetVec3f("light.position", *lightPosPtr);
 		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
 		glBindVertexArray(VAO);
 		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
-		lightingShader.SetMat4f("model", glm::mat4(1.0f));
+		glm::mat4 trans(1.0f);
+		float t = glfwGetTime();
+		trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f)*(sinf(t)*0.5f) + 1.0f);
+		trans = glm::rotate(trans, t, glm::vec3(1.0f, 1.0f, 1.0f));
+		lightingShader.SetMat4f("model", trans);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}); 
 
 	//------------ 渲染球体模型
 	auto sphereOp = new LambdaOp([&]() {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		lightingShader.Use();
+		auto lightPosPtr = GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightPos);
+		if (lightPosPtr != NULL)
+			lightingShader.SetVec3f("light.position", *lightPosPtr);
 		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
+		glm::vec3 lightColor;
+		lightColor.x = 0.5f + 0.5f*sinf(glfwGetTime() * 2.0f);
+		lightColor.y = 0.5f + 0.5f*sinf(glfwGetTime() * 0.7f);
+		lightColor.z = 0.5f + 0.5f*sinf(glfwGetTime() * 1.3f);
+		GStorage<glm::vec3>::GetInstance()->Register(str_LightColor, lightColor);
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // 降低影响
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+
+		lightingShader.SetVec3f("light.ambient", ambientColor);
+		lightingShader.SetVec3f("light.diffuse", diffuseColor);
+
 		glBindVertexArray(sphereVAO);
 		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(1.5f, 1.5f, -1.5f));
+		float t = glfwGetTime();
+		model = glm::translate(model, glm::vec3(1.5f, -0.5f + sinf(2*t), -1.5f));
 		lightingShader.SetMat4f("model", model);
 		glDrawElements(GL_TRIANGLES, sphere.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 	});
 
 	auto lightOp = new LambdaOp([&]() {
 		lightShader.Use();
+		glm::vec3 lightColor = *GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightColor);
+		lightShader.SetVec3f(str_LightColor, lightColor);
 		glBindVertexArray(lightVAO);
 		lightShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		lightShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		glm::mat4 lightModel = glm::mat4(1.0f);
+		float t = glfwGetTime();
+		lightModel = glm::rotate(lightModel, 0.5f * t, glm::vec3(0.0f,1.0f,0.0f));
+		lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
+		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+		glm::vec4 pos = lightModel * glm::vec4(0, 0, 0, 1);
+		GStorage<glm::vec3>::GetInstance()->Register(str_LightPos, glm::vec3(pos.x,pos.y,pos.z));
+
 		lightShader.SetMat4f("model", lightModel);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	});

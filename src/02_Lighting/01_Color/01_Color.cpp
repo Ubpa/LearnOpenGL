@@ -81,7 +81,9 @@ int main(int argc, char ** argv) {
 	lightingShader.SetVec3f("objectColor", 1.0f, 0.5f, 0.31f);
 	lightingShader.SetVec3f("lightColor", 1.0f, 1.0f, 1.0f);
 	//------------ 相机
-	Camera mainCamera(ratioWH, 0.1f, 100.0f, glm::vec3(0.0f,0.0f,4.0f));
+	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
+	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
+	Camera mainCamera(ratioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 4.0f));
 	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	//------------ 光源模型
 	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
@@ -166,6 +168,7 @@ Config * DoConfig() {
 			}
 		}
 	}
+	*config->GetStrPtr("RootPath") = rootPath;
 	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
 	GStorage<Config *>::GetInstance()->Register(str_MainCamera, config);
 	return config;

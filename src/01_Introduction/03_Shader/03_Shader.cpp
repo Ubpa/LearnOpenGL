@@ -9,7 +9,15 @@ using namespace std;
 
 void registerInput();
 
+#include <Utility/Config.h>
+#include <Utility/GStorage.h>
+const string str_MainConfig = "MainConfig";
+
+Config * DoConfig();
+
 int main(int argc, char ** argv) {
+	Config * config = DoConfig();
+	string rootPath = *config->GetStrPtr("RootPath");
 	size_t width = 800, height = 600;
 	string chapter = "01_Introduction";
 	string subchapter = "03_Shader";
@@ -68,7 +76,7 @@ int main(int argc, char ** argv) {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	//------------ 6. ±àÒë×ÅÉ«Æ÷
-	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
+	string prefix = rootPath + "/data/shaders/" + chapter + "/" + subchapter + "/";
 	string vsF = prefix + subchapter + ".vs";
 	string fsF = prefix + subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
@@ -128,4 +136,35 @@ void registerInput(){
 		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
 		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press 'ESC' to close exe" << endl << endl;
+}
+
+Config * DoConfig() {
+	printf("Try to read config.out\n");
+	string rootPath;
+	Config * config = new Config;
+	rootPath = string(ROOT_PATH);
+	printf("[1] First Try.\n");
+	config->Load(rootPath + "/config/config.out");
+	if (!config->IsValid()) {
+		rootPath = "../../..";
+		printf("[2] Second Try.\n");
+		config->Load(rootPath + "/config/config.out");
+		if (!config->IsValid()) {
+			rootPath = ".";
+			printf("[3] Third Try.\n");
+			config->Load(rootPath + "/config.out");
+			if (!config->IsValid()) {
+				printf(
+					"ERROR : Three Try All Fail\n"
+					"ERROR : RootPath is not valid.\n"
+					"Please change config/config.out 's value of RootPath and\n"
+					"run exe in correct place( original place or same palce with config.out ).\n");
+				exit(1);
+			}
+		}
+	}
+	*config->GetStrPtr("RootPath") = rootPath;
+	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
+	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
+	return config;
 }

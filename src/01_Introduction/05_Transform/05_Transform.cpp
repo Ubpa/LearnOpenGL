@@ -22,7 +22,15 @@ private:
 	size_t textureID;
 };
 
+#include <Utility/Config.h>
+#include <Utility/GStorage.h>
+const string str_MainConfig = "MainConfig";
+
+Config * DoConfig();
+
 int main(int argc, char ** argv) {
+	Config * config = DoConfig();
+	string rootPath = *config->GetStrPtr("RootPath");
 	string chapter = "01_Introduction";
 	string subchapter = "05_Transform";
 	//------------ 窗口初始化
@@ -66,8 +74,8 @@ int main(int argc, char ** argv) {
 	size_t texture[2];
 	glGenTextures(2, texture);
 	string imgName[2] = {
-		string(ROOT_PATH) + "/data/textures/container.jpg",
-		string(ROOT_PATH) + "/data/textures/awesomeface.png"
+		rootPath + "/data/textures/container.jpg",
+		rootPath + "/data/textures/awesomeface.png"
 	};
 	Image img[2];
 	GLenum mode[2] = { GL_RGB, GL_RGBA };
@@ -91,7 +99,7 @@ int main(int argc, char ** argv) {
 		img[i].Free();
 	}
 	//------------- 设置着色器
-	string prefix = string(ROOT_PATH) + "/data/shaders/" + chapter + "/" + subchapter + "/";
+	string prefix = rootPath + "/data/shaders/" + chapter + "/" + subchapter + "/";
 	string vsF = prefix + subchapter + ".vs";
 	string fsF = prefix + subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
@@ -214,4 +222,35 @@ void RegisterInput::Run() {
 		<< "* 5. Press '5' to set TEXTURE_WRAP[CLAMP_TO_EDGE]" << endl
 		<< "* 6. Press '6' to set TEXTURE_WRAP[CLAMP_TO_BORDER]" << endl
 		<< "* 7. Press 'ESC' to close exe" << endl << endl;
+}
+
+Config * DoConfig() {
+	printf("Try to read config.out\n");
+	string rootPath;
+	Config * config = new Config;
+	rootPath = string(ROOT_PATH);
+	printf("[1] First Try.\n");
+	config->Load(rootPath + "/config/config.out");
+	if (!config->IsValid()) {
+		rootPath = "../../..";
+		printf("[2] Second Try.\n");
+		config->Load(rootPath + "/config/config.out");
+		if (!config->IsValid()) {
+			rootPath = ".";
+			printf("[3] Third Try.\n");
+			config->Load(rootPath + "/config.out");
+			if (!config->IsValid()) {
+				printf(
+					"ERROR : Three Try All Fail\n"
+					"ERROR : RootPath is not valid.\n"
+					"Please change config/config.out 's value of RootPath and\n"
+					"run exe in correct place( original place or same palce with config.out ).\n");
+				exit(1);
+			}
+		}
+	}
+	*config->GetStrPtr("RootPath") = rootPath;
+	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
+	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
+	return config;
 }
