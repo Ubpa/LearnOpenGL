@@ -32,6 +32,7 @@
   /02_Lighting
     -01_Color
     -02_BasicLighting
+    -03_Material
   /LIBs
     /Utility
       -ArgManager

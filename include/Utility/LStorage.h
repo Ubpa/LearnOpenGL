@@ -9,6 +9,7 @@ namespace Ubpa {
 	template<typename T>
 	class LStorage {
 	public:
+		// 第一次注册返回 true, 后续返回 false
 		bool Register(const std::string & uniqueID, const T & item);
 
 		bool Unregister(const std::string & uniqueID);
@@ -22,8 +23,11 @@ namespace Ubpa {
 	//-----------
 	template<typename T>
 	bool LStorage<T>::Register(const std::string & uniqueID, const T & item) {
-		if (directory.find(uniqueID) != directory.end())
+		auto target = directory.find(uniqueID);
+		if (target != directory.end()) {
+			target->second = item;
 			return false;
+		}
 
 		directory[uniqueID] = item;
 		return true;
