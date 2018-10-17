@@ -38,6 +38,8 @@ namespace LOGL {
 
 		void SetOrtho();
 
+		glm::vec3 & GetPos();
+
 		// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 		void ProcessKeyboard(ENUM_Movement direction, float deltaTime);
 

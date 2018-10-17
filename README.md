@@ -29,14 +29,20 @@
     -05_Transform
     -06_Croodinate
     -07_Camera
+  /02_Lighting
+    -01_Color
+    -02_BasicLighting
   /LIBs
     /Utility
       -ArgManager
+      -Config
       -EventManager
       -File
       -Header
       -Image
       -Operation
+      -Shape
+    -Camera
     -glad
     -Glfw
     -Shader
@@ -67,3 +73,4 @@ cmake ..
 
 - 生成的`lib`会在 `/lib/Gen `中
 - `*.fs`、`*.vs`会从`/src`中拷贝到`/data`中（现已直接入库）
+

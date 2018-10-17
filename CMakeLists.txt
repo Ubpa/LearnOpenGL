@@ -49,6 +49,21 @@ macro(GET_DIR_NAME DIRNAME)
 	set(${DIRNAME} ${TMP})
 endmacro(GET_DIR_NAME DIRNAME)
 #---------------------------------------
+macro(INSTALL_SHADERS)
+	# copy shader files to build directory
+	file(GLOB SHADERS
+		"${CMAKE_CURRENT_SOURCE_DIR}/*.vs"
+		"${CMAKE_CURRENT_SOURCE_DIR}/*.fs"
+		"${CMAKE_CURRENT_SOURCE_DIR}/*.gs"
+	)
+
+	foreach(SHADER ${SHADERS})
+		string(REGEX MATCH "([^/]*)$" TMP ${SHADER})
+		add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SHADER} "${CMAKE_SOURCE_DIR}/data/shaders/${FOLDER_NAME}/${DIRNAME}/${TMP}")
+		install(FILES ${SHADER} DESTINATION "${CMAKE_SOURCE_DIR}/data/shaders/${FOLDER_NAME}/${DIRNAME}")
+	endforeach(SHADER)
+endmacro(INSTALL_SHADERS)
+#---------------------------------------
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -64,6 +79,8 @@ set (${PROJECT_NAME}_VERSION_MINOR 0)
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
 configure_file(config/config.in ${CMAKE_SOURCE_DIR}/config/config.out)
+install(FILES "${CMAKE_SOURCE_DIR}/config/config.out"
+  DESTINATION ${CMAKE_SOURCE_DIR}/config)
 configure_file(config/ROOT_PATH.h.in config/ROOT_PATH.h)
 
 include_directories (

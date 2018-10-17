@@ -41,6 +41,10 @@ void Camera::SetOrtho() {
 	projectionMode = ENUM_Projection::PROJECTION_ORTHO;
 }
 
+glm::vec3 & Camera::GetPos() {
+	return Position;
+}
+
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 	xoffset *= MouseSensitivity;
