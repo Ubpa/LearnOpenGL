@@ -25,8 +25,6 @@ Config * DoConfig();
 
 int main(int argc, char ** argv) {
 	Config * config = DoConfig();
-	if (config == NULL)
-		return 1;
 	string rootPath = *config->GetStrPtr("RootPath");
 	//------------ ´°¿Ú
 	float ratioWH = (float)val_windowWidth / (float)val_windowHeight;
@@ -179,11 +177,11 @@ Config * DoConfig() {
 					"ERROR : RootPath is not valid.\n"
 					"Please change config/config.out 's value of RootPath and\n"
 					"run exe in correct place( original place or same palce with config.out ).\n");
-				return NULL;
+				exit(1);
 			}
 		}
 	}
 	printf("config.out read success\nRootPath is %s\n", config->GetStrPtr("RootPath")->c_str());
-	GStorage<Config *>::GetInstance()->Register(str_MainCamera, config);
+	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
 	return config;
 }

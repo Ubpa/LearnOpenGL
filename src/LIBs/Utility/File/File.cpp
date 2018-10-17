@@ -60,7 +60,7 @@ string File::ReadLine() {
 		fprintf(stderr, "%s can't not read\n", fileName.c_str());
 		return "";
 	}
-	char buffer[1024] = "\n";
+	char buffer[1024] = "";
 	fgets(buffer, 1024, pF);
 	return buffer;
 }

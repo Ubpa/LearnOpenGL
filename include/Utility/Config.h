@@ -15,7 +15,7 @@ namespace Ubpa {
 		int * GetIntPtr(const std::string & id);
 		bool IsValid();
 	private:
-		bool Config::Decode(const std::string & data);
+		bool Config::DecodeLine(const std::string & data);
 		//------------
 		LStorage<std::string> strDirectory;
 		LStorage<float> floatDirectory;
