@@ -2,7 +2,6 @@
 #define _SPHERE_H_
 
 #include <Utility/Shape.h>
-#include <Utility/Array2D.h>
 
 namespace Ubpa {
 	class Sphere : public Shape {
@@ -10,14 +9,14 @@ namespace Ubpa {
 		Sphere(size_t n);
 		virtual ~Sphere();
 		float * GetNormalArr();
-		float * GetTexcoordArr();
+		float * GetTexCoordsArr();
 		size_t * GetIndexArr();
 		size_t GetNormalArrSize();
-		size_t GetTexcoordArrSize();
+		size_t GetTexCoordsArrSize();
 		size_t GetIndexArrSize();
 	protected:
 		Array2D<float> * normalArr;
-		Array2D<float> * texcoordArr;
+		Array2D<float> * texCoordsArr;
 		Array2D<size_t> * indexArr;
 	};
 }

@@ -16,6 +16,7 @@ namespace Ubpa {
 		//------------
 		Array2D<float> * vertexArr;
 		size_t triNum;
+		size_t vertexNum;
 	};
 }
 

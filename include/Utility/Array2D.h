@@ -10,7 +10,7 @@ namespace Ubpa {
 		//----------
 		T & At(size_t row, size_t col);
 		T & operator()(size_t row, size_t col);
-		void Copy(size_t row, size_t col, size_t n, T * src);
+		void Copy(size_t row, size_t col, size_t n, const T * src);
 		size_t GetRow() const;
 		size_t GetCol() const;
 		size_t GetArrSize() const;
@@ -31,6 +31,7 @@ namespace Ubpa {
 	template<typename T>
 	Array2D<T>::~Array2D() {
 		delete[] data;
+		data = nullptr;
 	}
 
 	template<typename T>
@@ -54,7 +55,7 @@ namespace Ubpa {
 	}
 
 	template<typename T>
-	void Array2D<T>::Copy(size_t row, size_t col, size_t n, T * src) {
+	void Array2D<T>::Copy(size_t row, size_t col, size_t n, const T * src) {
 		for (size_t i = 0; i < n; i++) {
 			At(row, col++) = src[i];
 			if (col == this->col) {

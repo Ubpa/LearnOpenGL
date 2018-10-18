@@ -1,10 +1,13 @@
 #include <ROOT_PATH.h>
 
+#include <GLFW/Glfw.h>
+
 #include <Utility/Image.h>
 #include <Utility/GStorage.h>
 #include <Utility/LambdaOp.h>
 #include <Utility/Config.h>
 #include <Utility/Sphere.h>
+#include <Utility/Cube.h>
 
 #include <LOGL/Shader.h>
 #include <LOGL/Camera.h>
@@ -20,7 +23,6 @@ using namespace LOGL;
 using namespace std;
 using namespace Ubpa;
 using namespace Define;
-//------------
 
 Config * DoConfig();
 
@@ -34,26 +36,35 @@ int main(int argc, char ** argv) {
 	string windowTitle = str_Chapter + "/" + str_Subchapter;
 	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, windowTitle.c_str());
 	Glfw::GetInstance()->LockCursor();
-	//------------
-	Sphere sphere = Sphere(30);
 	//------------ 正方体
-	size_t VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	Cube cube;
+	size_t cubeVAO;
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
 
-	size_t VBO;
-	glGenBuffers(1, &VBO);
+	size_t cubeVBO[3];
+	glGenBuffers(3, cubeVBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeData_PNT), cubeData_PNT, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, cube.GetVertexArrSize(), cube.GetVertexArr(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, cube.GetNormalArrSize(), cube.GetNormalArr(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[2]);
+	glBufferData(GL_ARRAY_BUFFER, cube.GetTexCoordsArrSize(), cube.GetTexCoordsArr(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(2);
+
+	size_t cubeEBO;
+	glGenBuffers(1, &cubeEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.GetIndexArrSize(), cube.GetIndexArr(), GL_STATIC_DRAW);
 	//------------ 球
+	Sphere sphere = Sphere(30);
+
 	size_t sphereVAO;
 	glGenVertexArrays(1, &sphereVAO);
 	glBindVertexArray(sphereVAO);
@@ -75,7 +86,7 @@ int main(int argc, char ** argv) {
 	size_t sphereTexCoordsVBO;
 	glGenBuffers(1, &sphereTexCoordsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, sphereTexCoordsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetTexcoordArrSize(), sphere.GetTexcoordArr(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sphere.GetTexCoordsArrSize(), sphere.GetTexCoordsArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
@@ -83,7 +94,6 @@ int main(int argc, char ** argv) {
 	glGenBuffers(1, &sphereEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.GetIndexArrSize(), sphere.GetIndexArr(), GL_STATIC_DRAW);
-
 	//------------ 灯
 	size_t lightVBO;
 	glGenBuffers(1, &lightVBO);
@@ -174,12 +184,12 @@ int main(int argc, char ** argv) {
 	auto cubeOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
+
 		lightingShader.Use();
 		auto lightPosPtr = GStorage<glm::vec3>::GetInstance()->GetPtr(str_LightPos);
 		if (lightPosPtr != NULL)
 			lightingShader.SetVec3f("light.position", *lightPosPtr);
 		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
-		glBindVertexArray(VAO);
 		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glm::mat4 trans(1.0f);
@@ -187,7 +197,9 @@ int main(int argc, char ** argv) {
 		trans = glm::scale(trans, glm::vec3(1.0f, 1.0f, 1.0f)*(sinf(t)*0.5f) + 1.0f);
 		trans = glm::rotate(trans, t, glm::vec3(1.0f, 1.0f, 1.0f));
 		lightingShader.SetMat4f("model", trans);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindVertexArray(cubeVAO);
+		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 	}); 
 
 	//------------ 渲染球体模型

@@ -1,15 +1,15 @@
 #include <Utility/Sphere.h>
 
-#include <Utility/Vec.h>
 #include <cmath>
 
 using namespace Ubpa;
 
 Sphere::Sphere(size_t n)
 	: Shape((n + 1)*(n + 1), 2 * n*n) {
+	// normal 和 pos 的值相同
 	normalArr = vertexArr;
-	texcoordArr = new Array2D<float>((n + 1)*(n + 1), 2);
-	indexArr = new Array2D<size_t>(2 * n*n, 3);
+	texCoordsArr = new Array2D<float>(vertexNum, 2);
+	indexArr = new Array2D<size_t>(triNum, 3);
 	//----------
 	float inc = 1.0f / n;
 	for (int i = 0; i <= n; i++) {
@@ -18,19 +18,24 @@ Sphere::Sphere(size_t n)
 			float v = inc * j;
 			float theta = PI * (1-u);
 			float phi = 2 * PI * v;
+			// 右手系: 上y, 右x, 垂直屏幕外为 z
 			vertexArr->At(i*(n + 1) + j, 0) = sinf(theta) * sinf(phi);
 			vertexArr->At(i*(n + 1) + j, 1) = cosf(theta);
 			vertexArr->At(i*(n + 1) + j, 2) = sinf(theta) * cosf(phi);
-			texcoordArr->At(i*(n + 1) + j, 0) = v;
-			texcoordArr->At(i*(n + 1) + j, 1) = u;
+			// u 对应纵轴所以应该是纹理坐标的 t
+			// v 对应横轴所以应该是纹理坐标的 s
+			texCoordsArr->At(i*(n + 1) + j, 0) = v;
+			texCoordsArr->At(i*(n + 1) + j, 1) = u;
 		}
 	}
 	//------------
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
+			// 左下 右下 左上
 			indexArr->At(2 * (i*n + j), 0) = i * (n + 1) + j;
 			indexArr->At(2 * (i*n + j), 1) = i * (n + 1) + j + 1;
 			indexArr->At(2 * (i*n + j), 2) = (i + 1) * (n + 1) + j;
+			// 右上 右下 左上
 			indexArr->At(2 * (i*n + j) + 1, 0) = (i + 1) * (n + 1) + j + 1;
 			indexArr->At(2 * (i*n + j) + 1, 1) = i * (n + 1) + j + 1;
 			indexArr->At(2 * (i*n + j) + 1, 2) = (i + 1) * (n + 1) + j;
@@ -39,11 +44,12 @@ Sphere::Sphere(size_t n)
 }
 
 Sphere::~Sphere() {
+	// normalArr 和 vertexArr 相同, 故无需释放normalArr
 	normalArr = nullptr;
-	delete texcoordArr;
-	texcoordArr = nullptr;
-	delete normalArr;
-	normalArr = nullptr;
+	delete texCoordsArr;
+	texCoordsArr = nullptr;
+	delete indexArr;
+	indexArr = nullptr;
 }
 
 float * Sphere::GetNormalArr() {
@@ -51,14 +57,13 @@ float * Sphere::GetNormalArr() {
 		return nullptr;
 
 	return normalArr->GetData();
-
 }
 
-float * Sphere::GetTexcoordArr() {
-	if (texcoordArr == nullptr)
+float * Sphere::GetTexCoordsArr() {
+	if (texCoordsArr == nullptr)
 		return nullptr;
 
-	return texcoordArr->GetData();
+	return texCoordsArr->GetData();
 }
 
 size_t * Sphere::GetIndexArr() {
@@ -72,8 +77,8 @@ size_t Sphere::GetNormalArrSize() {
 	return normalArr->GetMemSize();
 }
 
-size_t Sphere::GetTexcoordArrSize() {
-	return texcoordArr->GetMemSize();
+size_t Sphere::GetTexCoordsArrSize() {
+	return texCoordsArr->GetMemSize();
 }
 
 size_t Sphere::GetIndexArrSize() {
