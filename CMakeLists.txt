@@ -99,8 +99,16 @@ link_directories (
 
 add_subdirectory (src)
 
-install(FILES "${CMAKE_SOURCE_DIR}/data/textures/awesomeface.png" DESTINATION data/textures)
-install(FILES "${CMAKE_SOURCE_DIR}/data/textures/container.jpg" DESTINATION data/textures)
+set(IMAGES
+	awesomeface.png
+	container.jpg
+	container2.png
+	container2_specular.png
+	earth.jpg
+)
+foreach(IMAGE ${IMAGES})
+	install(FILES "${CMAKE_SOURCE_DIR}/data/textures/${IMAGE}" DESTINATION data/textures)
+endforeach(IMAGE ${IMAGES})
 #install(DIRECTORY "${CMAKE_SOURCE_DIR}/include" DESTINATION ".")
 
 include (InstallRequiredSystemLibraries)

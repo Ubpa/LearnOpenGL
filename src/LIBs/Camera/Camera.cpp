@@ -35,6 +35,10 @@ glm::vec3 & Camera::GetPos() {
 	return Position;
 }
 
+glm::vec3 & Camera::GetFront() {
+	return Front;
+}
+
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 	xoffset *= MouseSensitivity;
