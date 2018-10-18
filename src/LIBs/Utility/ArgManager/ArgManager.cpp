@@ -22,11 +22,11 @@ namespace Ubpa{
 		}
 	}
 	
-	vector<string> ArgManager::GetAll(string key) {
+	vector<string> ArgManager::GetAll(const string & key) {
 		return pairs[key];
 	}
 
-	string ArgManager::Get(string key, unsigned int idx, string defaultValue) {
+	string ArgManager::Get(const string & key, size_t idx, const string & defaultValue) {
 		vector<string> value = pairs[key];
 		if(idx >= value.size())
 			return defaultValue;

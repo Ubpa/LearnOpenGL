@@ -68,13 +68,18 @@ void RegisterInput::RegisterKey() {
 
 	// Move
 	size_t moveKey[] = { GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E };
+	size_t arrowKey[] = { GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_PAGE_UP, GLFW_KEY_PAGE_DOWN };
 	for (size_t i = 0; i < 6; i++) {
-		EventManager::GetInstance()->Register(EventManager::KEYBOARD | moveKey[i],
-			[=]() {
+		LambdaOp * op = new LambdaOp([=]() {
 			auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
 			auto deltaTime = **GStorage<float *>::GetInstance()->GetPtr(str_DeltaTime);
 			mainCamera->ProcessKeyboard(Camera::ENUM_Movement(Camera::MOVE_FORWARD + i), deltaTime);
 		});
+
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD | moveKey[i],
+			op);
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD | arrowKey[i],
+			op);
 	}
 }
 
@@ -84,5 +89,6 @@ void RegisterInput::PrintInfo() {
 		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press '3' to set projection[perspective]" << endl
 		<< "* 4. Press '4' to set projection[ortho]" << endl
-		<< "* 5. Press 'ESC' to close exe" << endl << endl;
+		<< "* 5. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
+		<< "* 6. Press 'ESC' to close exe" << endl << endl;
 }

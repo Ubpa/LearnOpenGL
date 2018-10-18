@@ -9,6 +9,8 @@ namespace Define{
 	
 	const std::string str_Img_Container = "/data/textures/container.jpg";
 	const std::string str_Img_Container2 = "/data/textures/container2.png";
+	const std::string str_Img_Container2_Specular = "/data/textures/container2_specular.png";
+	const std::string str_Img_Matrix = "/data/textures/matrix.jpg";
 	const std::string str_Img_Face = "/data/textures/awesomeface.png";
 	const std::string str_Img_Earth = "/data/textures/earth.jpg";
 	

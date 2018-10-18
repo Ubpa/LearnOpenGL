@@ -33,16 +33,17 @@
     -01_Color
     -02_BasicLighting
     -03_Material
+    -04_LightingMap
   /LIBs
     /Utility
       -ArgManager
       -Config
       -EventManager
       -File
-      -Header
+      -Header: Slogleton, Storage, Pool, Vec, Array2D
       -Image
-      -Operation
-      -Shape
+      -Operation: Operation, LambdaOp, InfoLambdaOp, OpQueue
+      -Shape: Shape, Cube, Sphere
     -Camera
     -glad
     -Glfw
