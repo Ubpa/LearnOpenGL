@@ -128,20 +128,37 @@ int main(int argc, char ** argv) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
 	glEnableVertexAttribArray(0);
 
-	//------------ nanosuit
-	Model nanosuit(rootPath + str_Obj_Nanosuit);
+	//------------ trasparent panel
+	size_t transparentVBO;
+	glGenBuffers(1, &transparentVBO);
+	size_t transparentVAO;
+	glGenVertexArrays(1, &transparentVAO);
+
+	glBindVertexArray(transparentVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	//------------ 纹理
-	const int textureNum = 5;
+	const int textureNum = 7;
 	size_t texture[textureNum];
 	string imgName[textureNum] = {
 		rootPath + str_Img_Container2,
 		rootPath + str_Img_Earth,
 		rootPath + str_Img_Container2_Specular,
 		rootPath + str_Img_Matrix,
-		rootPath + str_Img_Marble
+		rootPath + str_Img_Marble,
+		rootPath + str_Img_Grass,
+		rootPath + str_Img_Window
 	};
-	bool flip[textureNum] = { false, true, false, true, false };
+	bool flip[textureNum] = { false, true, false, true, false, true, false };
 	for (size_t i = 0; i < textureNum; i++) {
 		Texture tex(imgName[i].c_str());
 		if (!tex.IsValid()) {
@@ -166,6 +183,17 @@ int main(int argc, char ** argv) {
 		cout << "nanosuitShader is not Valid\n";
 		return 1;
 	}
+
+	//------------ transparent 着色器
+	string transparent_vs = rootPath + str_Transparent_vs;
+	string transparent_fs = rootPath + str_Transparent_fs;
+	Shader transparentShader(transparent_vs.c_str(), transparent_fs.c_str());
+	if (!transparentShader.IsValid()) {
+		cout << "transparentShader is not Valid\n";
+		return 1;
+	}
+	transparentShader.Use();
+	transparentShader.SetInt("texture1", 0);
 
 	//------------ 单色着色器
 	string singleColor_vs = rootPath + str_SingleColor_vs;
@@ -264,14 +292,22 @@ int main(int argc, char ** argv) {
 		pShaders[i]->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 	}
 
+	//------------ nanosuit
+	Model nanosuit(rootPath + str_Obj_Nanosuit);
+
+
 	auto initOp = new LambdaOp([]() {
 		glDepthFunc(GL_LESS);
 		glEnable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glClearStencil(0xFF);
+		glEnable(GL_BLEND);
+		glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
 	}, false);
 
 	//------------ 输入
 	auto registerInputOp = new RegisterInput(false);
-	  
+	 
 	//------------- 时间
 	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 	GStorage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
@@ -284,8 +320,6 @@ int main(int argc, char ** argv) {
 	
 	//------------ 清除
 	auto clearOp = new LambdaOp([]() {
-		glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
-		glClearStencil(0xFF);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	});
 	
@@ -450,14 +484,52 @@ int main(int argc, char ** argv) {
 		}
 	});
 
+	auto grassOp = new LambdaOp([&]() {
+		transparentShader.Use();
+		transparentShader.SetMat4f("view", mainCamera.GetViewMatrix());
+		transparentShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		glBindVertexArray(transparentVAO);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[5]);
+		
+		for (size_t i = 0; i < 5; i++) {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, vegetationp[i]);
+			transparentShader.SetMat4f("model", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+		
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[6]);
+
+		std::map<float, glm::vec3> sorted;
+		for (size_t i = 0; i < 5; i++)
+		{
+			glm::vec3 windowPos = vegetationp[i] + glm::vec3(-5.0f, 0, 0.2f);
+			float distance = glm::length(mainCamera.GetPos() - windowPos);
+			sorted[distance] = windowPos;
+		}
+
+		for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, it->second);
+			transparentShader.SetMat4f("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+	});
+
 	//------------ 渲染
 	auto renderOp = new OpQueue;
-	(*renderOp) << clearOp << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp;
+	(*renderOp) << clearOp << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp << grassOp;
 	
 	//------------- 末尾
 	auto endOp = new LambdaOp([]() {
 		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
-		glfwPollEvents();
+		glfwPollEvents(); 
 	});
 	
 	//------------- 整合

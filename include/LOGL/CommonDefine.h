@@ -18,6 +18,8 @@ namespace Define{
 	const std::string str_Img_Face = "/data/textures/awesomeface.png";
 	const std::string str_Img_Earth = "/data/textures/earth.jpg";
 	const std::string str_Img_Marble = "/data/textures/marble.jpg";
+	const std::string str_Img_Grass = "/data/textures/grass.png";
+	const std::string str_Img_Window = "/data/textures/window.png";
 
 	const std::string str_Obj_Nanosuit = "/data/objects/nanosuit/nanosuit.obj";
 	
@@ -142,6 +144,17 @@ namespace Define{
 		 5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
 		-5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
 		 5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 2.0f
+	};
+
+	const float transparentVertices[] = {
+		// positions         //normal          // texture Coords (swapped y coordinates because texture is flipped upside down)
+		0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f,
+		0.0f, -0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f,  1.0f,
+		1.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f,  0.0f
 	};
 }
 

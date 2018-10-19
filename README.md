@@ -41,6 +41,7 @@
   /04_AdvanceOGL
   	-01_DepthTest
   	-02_StencilTest
+  	-03_Blend
   /LIBs
     /Utility
       -ArgManager
