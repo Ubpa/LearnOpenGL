@@ -36,6 +36,11 @@
     -04_LightingMap
     -05_LightCaster
     -06_MultiLight
+  /03_LoadModel
+  	-01_LoadModel
+  /04_AdvanceOGL
+  	-01_DepthTest
+  	-02_StencilTest
   /LIBs
     /Utility
       -ArgManager
