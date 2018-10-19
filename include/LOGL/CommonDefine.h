@@ -17,6 +17,8 @@ namespace Define{
 	const std::string str_Img_Matrix = "/data/textures/matrix.jpg";
 	const std::string str_Img_Face = "/data/textures/awesomeface.png";
 	const std::string str_Img_Earth = "/data/textures/earth.jpg";
+
+	const std::string str_Obj_Nanosuit = "/data/objects/nanosuit/nanosuit.obj";
 	
 	const std::string str_MainCamera = "MainCamera";
 	const std::string str_DeltaTime = "DeltaTime";
@@ -25,6 +27,7 @@ namespace Define{
 	
 	const std::string config_CameraMoveSpeed = "CameraMoveSpeed";
 	const std::string config_CameraRotateSensitivity = "CameraRotateSensitivity";
+
 	
 	//position, TexCoords
 	const float data_vertices[] = {

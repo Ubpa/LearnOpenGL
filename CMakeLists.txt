@@ -105,11 +105,12 @@ set(IMAGES
 	container2.png
 	container2_specular.png
 	earth.jpg
+	matrix.jpg
 )
 foreach(IMAGE ${IMAGES})
 	install(FILES "${CMAKE_SOURCE_DIR}/data/textures/${IMAGE}" DESTINATION data/textures)
 endforeach(IMAGE ${IMAGES})
-#install(DIRECTORY "${CMAKE_SOURCE_DIR}/include" DESTINATION ".")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/objects/nanosuit" DESTINATION data/objects)
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
