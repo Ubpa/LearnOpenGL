@@ -368,6 +368,9 @@ int main(int argc, char ** argv) {
 		singleColorShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		singleColorShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+
 		glBindVertexArray(cubeVAO);
 		glEnable(GL_STENCIL_TEST);
 		for (size_t i = 0; i < 10; i++)
@@ -409,6 +412,7 @@ int main(int argc, char ** argv) {
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		glStencilMask(0xFF); // 启用模板缓冲写入
 		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
 	});
 
 	//------------ 渲染球体模型
