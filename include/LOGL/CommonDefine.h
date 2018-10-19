@@ -17,6 +17,7 @@ namespace Define{
 	const std::string str_Img_Matrix = "/data/textures/matrix.jpg";
 	const std::string str_Img_Face = "/data/textures/awesomeface.png";
 	const std::string str_Img_Earth = "/data/textures/earth.jpg";
+	const std::string str_Img_Marble = "/data/textures/marble.jpg";
 
 	const std::string str_Obj_Nanosuit = "/data/objects/nanosuit/nanosuit.obj";
 	
@@ -130,6 +131,17 @@ namespace Define{
 		glm::vec3(1.5f,  2.0f, -2.5f),
 		glm::vec3(1.5f,  0.2f, -1.5f),
 		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
+	const float planeVertices[] = {
+		// positions          //noraml          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+		 5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+		-5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+
+		 5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+		 5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 2.0f
 	};
 }
 
