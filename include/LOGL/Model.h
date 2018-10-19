@@ -17,7 +17,7 @@ namespace LOGL {
 		Model(const std::string & path, bool gamma = false);
 
 		// draws the model, and thus all its meshes
-		void Draw(const Shader & shader);
+		void Draw(const Shader & shader, const std::string & materialPrefix = "");
 
 	private:
 		/*  Model Data */

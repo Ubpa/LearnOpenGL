@@ -55,7 +55,7 @@ void Mesh::SetupMesh()
 }
 
 // render the mesh
-void Mesh::Draw(const Shader & shader)
+void Mesh::Draw(const Shader & shader, const string & materialPrefix)
 {
 	// bind appropriate textures
 	size_t diffuseNr = 1;
@@ -78,7 +78,7 @@ void Mesh::Draw(const Shader & shader)
 			number = std::to_string(heightNr++); // transfer size_t to stream
 
 												 // now set the sampler to the correct texture unit
-		shader.SetInt(name + number, i);
+		shader.SetInt(materialPrefix + name + number, i);
 		// and finally bind the texture
 		glBindTexture(GL_TEXTURE_2D, textureInfos[i].id);
 	}

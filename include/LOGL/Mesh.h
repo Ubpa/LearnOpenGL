@@ -38,7 +38,7 @@ namespace LOGL {
 		Mesh(const std::vector<Vertex> & vertices, const std::vector<size_t> & indices, const std::vector<TextureInfo> & textureInfos);
 
 		// render the mesh
-		void Draw(const Shader & shader);
+		void Draw(const Shader & shader, const std::string & materialPrefix = "");
 
 	private:
 		/*  Mesh Data  */

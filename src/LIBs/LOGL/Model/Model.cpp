@@ -12,10 +12,10 @@ Model::Model(const string & path, bool gamma)
 }
 
 // draws the model, and thus all its meshes
-void Model::Draw(const Shader & shader)
+void Model::Draw(const Shader & shader, const string & materialPrefix)
 {
 	for (size_t i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+		meshes[i].Draw(shader, materialPrefix);
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
