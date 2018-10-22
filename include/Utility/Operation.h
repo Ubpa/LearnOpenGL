@@ -9,7 +9,10 @@ namespace Ubpa{
 
 	class Operation{
 	public:
-		static void Delete(Operation * op) { delete op; }
+		template <typename T>
+		static Ptr<T> ToPtr(T * op) {
+			return Ptr<T>(op, ProtectDelete);
+		}
 		Operation(bool isHold = true);
 		//------------
 		bool IsHold();
@@ -18,6 +21,7 @@ namespace Ubpa{
 		//------------
 		virtual void Run() = 0;
 	protected:
+		static void ProtectDelete(Operation * op);
 		virtual ~Operation();
 		//------------
 		bool isHold;

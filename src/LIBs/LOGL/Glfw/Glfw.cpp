@@ -81,7 +81,7 @@ void Glfw::Run(Ptr<Operation> & op) {
 }
 
 void Glfw::Run(Operation * op) {
-	Run(Ptr<Operation>(op, Operation::Delete));
+	Run(Operation::ToPtr(op));
 }
 
 int Glfw::GetKey(int key) { return glfwGetKey(window, key); }

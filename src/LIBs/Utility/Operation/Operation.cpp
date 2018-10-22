@@ -4,7 +4,11 @@ using namespace Ubpa;
 using namespace std;
 
 Operation::Operation(bool isHold): isHold(isHold) { };
+
 Operation::~Operation() { printf("Delete Operation\n"); };
+
+void Operation::ProtectDelete(Operation * op) { delete op; }
+//------------
 
 bool Operation::IsHold() { return isHold; }
 

@@ -8,22 +8,30 @@ using namespace std;
 OpQueue::OpQueue(bool isHold)
 	: Operation(isHold) { }
 
-OpQueue & OpQueue::operator<<(Ptr<Operation> & op) {
-	opList.push_back(op);
+OpQueue::~OpQueue() { printf("Delete OpQueue\n"); }
+
+//------------
+
+OpQueue & OpQueue::operator<<(const Ptr<Operation> & op) {
+	if (op != nullptr)
+		opList.push_back(op);
 	return *this;
 }
 
 OpQueue & OpQueue::operator<<(Operation * op) {
-	opList.push_back(Ptr<Operation>(op, Operation::Delete));
+	if (op != nullptr)
+		opList.push_back(Operation::ToPtr(op));
 	return *this;
 }
 
 void OpQueue::Push(Ptr<Operation> & op) {
-	opList.push_back(op);
+	if (op != nullptr)
+		opList.push_back(op);
 }
 
 void OpQueue::Push(Operation * op) {
-	opList.push_back(Ptr<Operation>(op, Operation::Delete));
+	if(op != nullptr)
+		opList.push_back(Operation::ToPtr(op));
 }
 size_t OpQueue::Size() const {
 	return opList.size();

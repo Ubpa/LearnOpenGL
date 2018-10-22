@@ -9,7 +9,7 @@ namespace Ubpa {
 	public:
 		OpQueue(bool isHold = true);
 		//------------
-		OpQueue & operator<<(Ptr<Operation> & operation);
+		OpQueue & operator<<(const Ptr<Operation> & operation);
 		OpQueue & operator<<(Operation * operation);
 		void Push(Ptr<Operation> & op);
 		void Push(Operation * op);
@@ -17,7 +17,7 @@ namespace Ubpa {
 		//------------
 		virtual void Run();
 	protected:
-		virtual ~OpQueue() { printf("Delete OpQueue\n"); };
+		virtual ~OpQueue();
 		//------------
 		std::list< Ptr<Operation> > opList;
 	private:
