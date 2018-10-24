@@ -26,6 +26,7 @@ namespace Define {
 
 	const std::string str_LightColor = "lightColor";
 	const std::string str_LightPos = "lightPos";
+	const std::string str_PostProcess = "postProcessShader";
 
 	// positions of the point lights
 	const glm::vec3 pointLightPositions[] = {

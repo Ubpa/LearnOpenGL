@@ -7,6 +7,7 @@
 #include <GLFW/Glfw.h>
 #include <Utility/LambdaOp.h>
 #include <LOGL/Camera.h>
+#include <LOGL/Shader.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -45,21 +46,21 @@ void RegisterInput::RegisterKey() {
 	
 	// Polygon Mode
 	//------------ GLFW_KEY_1
-	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_1,
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_U,
 		[]() { glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); });
 	//------------ GLFW_KEY_2
-	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_2,
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_I,
 		[]() { glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); });
 
 	// Projection
 	//------------ GLFW_KEY_3
-	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_3, 
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_O, 
 		[]() {
 		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
 		mainCamera->SetPerspective();
 	});
 	//------------ GLFW_KEY_4
-	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_4, 
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_P, 
 		[]() {
 		auto mainCamera = *GStorage<Camera *>::GetInstance()->GetPtr(str_MainCamera);
 		mainCamera->SetOrtho();
@@ -81,14 +82,21 @@ void RegisterInput::RegisterKey() {
 		EventManager::GetInstance()->Register(EventManager::KEYBOARD | arrowKey[i],
 			op);
 	}
+
+	for (size_t i = 0; i < 6; i++) {
+		EventManager::GetInstance()->Register(EventManager::KEYBOARD | (GLFW_KEY_0 + i), [=]() {
+			auto postProcessShader = *GStorage<Shader *>::GetInstance()->GetPtr(str_PostProcess);
+			postProcessShader->SetInt("mode", i);
+		});
+	}
 }
 
 void RegisterInput::PrintInfo() {
 	cout << endl
-		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
-		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
-		<< "* 3. Press '3' to set projection[perspective]" << endl
-		<< "* 4. Press '4' to set projection[ortho]" << endl
+		<< "* 1. Press 'U' to set PolygonMode[FILL]" << endl
+		<< "* 2. Press 'I' to set PolygonMode[LINE]" << endl
+		<< "* 3. Press 'O' to set projection[perspective]" << endl
+		<< "* 4. Press 'P' to set projection[ortho]" << endl
 		<< "* 5. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
 		<< "* 6. Press 'ESC' to close exe" << endl << endl;
 }

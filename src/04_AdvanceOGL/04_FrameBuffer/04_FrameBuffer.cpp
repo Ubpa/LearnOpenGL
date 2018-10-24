@@ -243,6 +243,8 @@ int main(int argc, char ** argv) {
 	}
 	postProcessShader.Use();
 	postProcessShader.SetInt("screenTexture", 0);
+	postProcessShader.SetInt("mode", 0);
+	GStorage<Shader *>::GetInstance()->Register(str_PostProcess, &postProcessShader);
 
 	//------------ ¹âÕÕ×ÅÉ«Æ÷
 	string lighting_vs = rootPath + str_Lighting_vs;
