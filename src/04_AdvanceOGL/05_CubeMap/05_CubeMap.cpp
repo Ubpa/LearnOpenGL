@@ -83,16 +83,22 @@ int main(int argc, char ** argv) {
 	
 
 	//------------ 天空盒
-	Cube skybox = Cube();
+	Cube skybox;
 	size_t VAO_Skybox;
 	glGenVertexArrays(1, &VAO_Skybox);
+	glBindVertexArray(VAO_Skybox);
+
 	size_t VBO_Skybox;
 	glGenBuffers(1, &VBO_Skybox);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_Skybox);
 	glBufferData(GL_ARRAY_BUFFER, skybox.GetVertexArrSize(), skybox.GetVertexArr(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)(0*sizeof(float)));
+	glEnableVertexAttribArray(0);
 
+	size_t EBO_Skybox;
+	glGenBuffers(1, &EBO_Skybox);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_Skybox);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, skybox.GetIndexArrSize(), skybox.GetIndexArr(), GL_STATIC_DRAW);
 
 	//------------ 球
 	Sphere sphere = Sphere(30);
@@ -177,7 +183,7 @@ int main(int argc, char ** argv) {
 
 	//------------ 纹理
 	const int textureNum = 7;
-	size_t texture[textureNum];
+	size_t textureID[textureNum];
 	string imgName[textureNum] = {
 		rootPath + str_Img_Container2,
 		rootPath + str_Img_Earth,
@@ -191,11 +197,20 @@ int main(int argc, char ** argv) {
 	for (size_t i = 0; i < textureNum; i++) {
 		Texture tex(imgName[i].c_str());
 		if (!tex.IsValid()) {
-			printf("Load texture[%s] fail.\n", imgName[i].c_str());
+			printf("Load textureID[%s] fail.\n", imgName[i].c_str());
 			return 1;
 		}
 
-		texture[i] = tex.GetID();
+		textureID[i] = tex.GetID();
+	}
+	
+	vector<string> skyboxImgPath(6);
+	for (size_t i = 0; i < 6; i++)
+		skyboxImgPath[i] = rootPath + str_Vec_Img_Skybox[i];
+	Texture skyboxTexture(skyboxImgPath);
+	if (!skyboxTexture.IsValid()) {
+		printf("skyboxTexture is not valid!\n");
+		return 1;
 	}
 
 	//------------ 相机
@@ -245,6 +260,17 @@ int main(int argc, char ** argv) {
 	lightShader.Use();
 	lightShader.SetVec3f("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	
+
+	//------------ 天空盒着色器
+	string skybox_vs = rootPath + str_Skybox_vs;
+	string skybox_fs = rootPath + str_Skybox_fs;
+	Shader skyboxShader(skybox_vs.c_str(), skybox_fs.c_str());
+	if (!skyboxShader.IsValid()) {
+		cout << "skyboxShader is not Valid\n";
+		return 1;
+	}
+	skyboxShader.SetInt("skybox", 0);
+
 	//------------ 后期处理着色器
 	string postProcess_vs = rootPath + str_PostProcess_vs;
 	string postProcess_fs = rootPath + str_PostProcess_fs;
@@ -286,7 +312,7 @@ int main(int argc, char ** argv) {
 		pShaders[i]->Use();
 		// directional light
 		pShaders[i]->SetVec3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		pShaders[i]->SetVec3f("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+		pShaders[i]->SetVec3f("dirLight.ambient", 0.5f, 0.5f, 0.5f);
 		pShaders[i]->SetVec3f("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
 		pShaders[i]->SetVec3f("dirLight.specular", 0.5f, 0.5f, 0.5f);
 		// point light 1
@@ -335,7 +361,7 @@ int main(int argc, char ** argv) {
 	//------------ nanosuit
 	Model nanosuit(rootPath + str_Obj_Nanosuit);
 
-	//------------
+	//------------ 帧缓存
 	
 	size_t FBO;
 	glGenFramebuffers(1, &FBO);
@@ -377,7 +403,7 @@ int main(int argc, char ** argv) {
 	//------------ 地板
 	auto panelOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[4]);
+		glBindTexture(GL_TEXTURE_2D, textureID[4]);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glActiveTexture(GL_TEXTURE2);
@@ -399,11 +425,11 @@ int main(int argc, char ** argv) {
 	//------------ 渲染正方体模型
 	auto cubeOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glBindTexture(GL_TEXTURE_2D, textureID[0]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture[2]);
+		glBindTexture(GL_TEXTURE_2D, textureID[2]);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, texture[3]);
+		glBindTexture(GL_TEXTURE_2D, textureID[3]);
 
 		lightingShader.Use();
 
@@ -470,11 +496,11 @@ int main(int argc, char ** argv) {
 	//------------ 渲染球体模型
 	auto sphereOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glBindTexture(GL_TEXTURE_2D, textureID[1]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glBindTexture(GL_TEXTURE_2D, textureID[1]);
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, texture[2]);
+		glBindTexture(GL_TEXTURE_2D, textureID[2]);
 
 		lightingShader.Use();
 
@@ -547,7 +573,7 @@ int main(int argc, char ** argv) {
 		glBindVertexArray(transparentVAO);
 		
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[5]);
+		glBindTexture(GL_TEXTURE_2D, textureID[5]);
 		
 		for (size_t i = 0; i < 5; i++) {
 			glm::mat4 model = glm::mat4(1.0f);
@@ -559,7 +585,7 @@ int main(int argc, char ** argv) {
 		
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture[6]);
+		glBindTexture(GL_TEXTURE_2D, textureID[6]);
 
 		std::map<float, glm::vec3> sorted;
 		for (size_t i = 0; i < 5; i++)
@@ -576,6 +602,19 @@ int main(int argc, char ** argv) {
 			transparentShader.SetMat4f("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
+	});
+
+	auto skyboxOp = new LambdaOp([&]() {
+		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+		skyboxShader.Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.GetID());
+		glm::mat4 view = glm::mat4(glm::mat3(mainCamera.GetViewMatrix()));
+		skyboxShader.SetMat4f("view", view);
+		skyboxShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		glBindVertexArray(VAO_Skybox);
+		glDrawElements(GL_TRIANGLES, skybox.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+		glDepthFunc(GL_LESS); // set depth function back to default
 	});
 	
 	//------------ 离屏渲染
@@ -595,7 +634,7 @@ int main(int argc, char ** argv) {
 		// clear all relevant buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}));
-	(*offScreanOp) << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp << grass_glassOp;
+	(*offScreanOp) << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp << skyboxOp << grass_glassOp;
 	
 	//------------ 后期处理
 	auto postProcessOp = new LambdaOp([&](){

@@ -12,4 +12,9 @@ void LambdaOp::SetOp(const std::function<void()> & op) {
 	this->op = op;
 }
 
-void LambdaOp::Run() { op(); }
+void LambdaOp::Run() {
+	if (op == NULL)
+		isHold = false;
+	else
+		op();
+}

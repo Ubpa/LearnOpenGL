@@ -23,6 +23,8 @@ namespace Define {
 	const std::string str_Transparent_fs = str_ShaderPrefix + "transparent.fs";
 	const std::string str_PostProcess_vs = str_ShaderPrefix + "postProcess.vs";
 	const std::string str_PostProcess_fs = str_ShaderPrefix + "postProcess.fs";
+	const std::string str_Skybox_vs = str_ShaderPrefix + "skybox.vs";
+	const std::string str_Skybox_fs = str_ShaderPrefix + "skybox.fs";
 
 	const std::string str_LightColor = "lightColor";
 	const std::string str_LightPos = "lightPos";
