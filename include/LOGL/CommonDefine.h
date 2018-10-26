@@ -2,6 +2,7 @@
 #define _STATIC_CONFIG_H_
 
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +21,15 @@ namespace Define{
 	const std::string str_Img_Marble = "/data/textures/marble.jpg";
 	const std::string str_Img_Grass = "/data/textures/grass.png";
 	const std::string str_Img_Window = "/data/textures/window.png";
+	
+	const std::vector<std::string> str_Vec_Img_Skybox = {
+		"/data/textures/skybox/right.jpg",
+		"/data/textures/skybox/left.jpg",
+		"/data/textures/skybox/top.jpg",
+		"/data/textures/skybox/bottom.jpg",
+		"/data/textures/skybox/front.jpg",
+		"/data/textures/skybox/back.jpg"
+	};
 
 	const std::string str_Obj_Nanosuit = "/data/objects/nanosuit/nanosuit.obj";
 	

@@ -8,7 +8,7 @@
 
 namespace Define {
 	const std::string str_Chapter = "04_AdvanceOGL";
-	const std::string str_Subchapter = "04_FrameBuffer";
+	const std::string str_Subchapter = "05_CubeMap";
 
 	const std::string str_ShaderPrefix = "/data/shaders/" + str_Chapter + "/" + str_Subchapter + "/";
 	const std::string str_Light_vs = str_ShaderPrefix + "light.vs";

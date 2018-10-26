@@ -10,6 +10,7 @@ namespace Ubpa {
 		//------------
 		bool IsValid() const;
 		unsigned char * GetData();
+		unsigned char const * GetConstData() const;
 		int GetWidth() const;
 		int GetHeight() const;
 		int GetChannel() const;

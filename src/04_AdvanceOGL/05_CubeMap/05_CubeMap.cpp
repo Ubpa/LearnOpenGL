@@ -82,6 +82,18 @@ int main(int argc, char ** argv) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.GetIndexArrSize(), cube.GetIndexArr(), GL_STATIC_DRAW);
 	
 
+	//------------ Ìì¿ÕºÐ
+	Cube skybox = Cube();
+	size_t VAO_Skybox;
+	glGenVertexArrays(1, &VAO_Skybox);
+	size_t VBO_Skybox;
+	glGenBuffers(1, &VBO_Skybox);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_Skybox);
+	glBufferData(GL_ARRAY_BUFFER, skybox.GetVertexArrSize(), skybox.GetVertexArr(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)(0*sizeof(float)));
+
+
 	//------------ Çò
 	Sphere sphere = Sphere(30);
 

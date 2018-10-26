@@ -27,6 +27,10 @@ unsigned char * Image::GetData() {
 	return data;
 }
 
+unsigned char const * Image::GetConstData() const{
+	return data;
+}
+
 int Image::GetWidth() const{
 	return width;
 }
