@@ -18,7 +18,7 @@ namespace LOGL {
 		bool IsValid() const;
 
 		// activate the shader
-		bool Use();
+		bool Use() const;
 
 		// utility uniform functions
 		void SetBool(const std::string &name, bool value) const;
@@ -28,9 +28,10 @@ namespace LOGL {
 		void SetVec3f(const std::string &name, const glm::vec3 & v) const;
 		void SetVec4f(const std::string &name, float value0, float value1, float value2, float value3) const;
 		void SetVec4f(const std::string &name, const glm::vec4 & v) const;
-		void SetMat4f(const std::string &name, const float * matValue);
-		void SetMat4f(const std::string &name, const glm::mat4 mat4);
+		void SetMat4f(const std::string &name, const float * matValue) const;
+		void SetMat4f(const std::string &name, const glm::mat4 mat4) const;
 	private:
+		static size_t curID;
 		// utility function for checking shader compilation/linking errors.
 		int CheckCompileErrors(size_t shader, std::string type);
 		//------------

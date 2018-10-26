@@ -12,7 +12,6 @@ namespace LOGL {
 		//------------
 		void Init(size_t width = 800, size_t height = 600, const char * title = "Title");
 		void Terminate();
-		//void SetCB_FrameBuffSize();
 		void Run(Ubpa::Operation * op = NULL);
 		void Run(Ubpa::Ptr<Ubpa::Operation> & op);
 		GLFWwindow * GetWindow();
@@ -22,7 +21,7 @@ namespace LOGL {
 	private:
 		Glfw();
 		Glfw(const Glfw&);
-		Glfw& operator=(const Glfw&);
+		Glfw& operator=(const Glfw&) = default;
 		static Glfw * instance;
 		//------------
 		static void CB_FrameBuffSize(GLFWwindow* window, int width, int height);
