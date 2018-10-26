@@ -174,7 +174,7 @@ int main(int argc, char ** argv) {
 		rootPath + str_Img_Marble,
 		rootPath + str_Img_Grass,
 		rootPath + str_Img_Window
-	};
+	}; 
 	bool flip[textureNum] = { false, true, false, true, false, true, false };
 	for (size_t i = 0; i < textureNum; i++) {
 		Texture tex(imgName[i].c_str());
