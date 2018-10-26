@@ -157,7 +157,6 @@ int main(int argc, char ** argv) {
 		cout << "lightShader is not Valid\n";
 		return 1;
 	}
-	lightShader.Use();
 	lightShader.SetVec3f("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 	
 
@@ -171,6 +170,7 @@ int main(int argc, char ** argv) {
 	}
 	skyboxShader.SetInt("skybox", 0);
 
+
 	//------------ 后期处理着色器
 	string postProcess_vs = rootPath + str_PostProcess_vs;
 	string postProcess_fs = rootPath + str_PostProcess_fs;
@@ -179,10 +179,31 @@ int main(int argc, char ** argv) {
 		cout << "postProcessShader is not Valid\n";
 		return 1;
 	}
-	postProcessShader.Use();
 	postProcessShader.SetInt("screenTexture", 0);
 	postProcessShader.SetInt("mode", 0);
 	GStorage<Shader *>::GetInstance()->Register(str_PostProcess, &postProcessShader);
+
+
+	//------------ 反射着色器
+	string reflect_vs = rootPath + str_Reflect_vs;
+	string reflect_fs = rootPath + str_Reflect_fs;
+	Shader reflectShader(reflect_vs.c_str(), reflect_fs.c_str());
+	if (!reflectShader.IsValid()) {
+		cout << "reflectShader is not Valid\n";
+		return 1;
+	}
+	reflectShader.SetInt("skybox", 0);
+
+
+	//------------ 折射着色器
+	string refract_vs = rootPath + str_Refract_vs;
+	string refract_fs = rootPath + str_Refract_fs;
+	Shader refractShader(refract_vs.c_str(), refract_fs.c_str());
+	if (!refractShader.IsValid()) {
+		cout << "refractShader is not Valid\n";
+		return 1;
+	}
+	refractShader.SetInt("skybox", 0);
 
 	//------------ 光照着色器
 	string lighting_vs = rootPath + str_Lighting_vs;
@@ -194,7 +215,6 @@ int main(int argc, char ** argv) {
 	} 
 	
 	//材质 
-	lightingShader.Use();
 	lightingShader.SetInt("material.diffuse", 0);
 	lightingShader.SetInt("material.specular", 1);
 	lightingShader.SetInt("material.emission", 2);
@@ -203,7 +223,6 @@ int main(int argc, char ** argv) {
 	lightingShader.SetFloat("material.linear", 0.09f);
 	lightingShader.SetFloat("material.quadratic", 0.032f);
 
-	nanosuitShader.Use();
 	nanosuitShader.SetFloat("material.shininess", 32.0f);
 
 	//光源
@@ -300,7 +319,8 @@ int main(int argc, char ** argv) {
 		lastFrame = currentFrame;
 	});
 	
-	//------------ 地板
+	//------------ 模型渲染
+
 	auto panelOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID[4]);
@@ -322,7 +342,6 @@ int main(int argc, char ** argv) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	});
 
-	//------------ 渲染正方体模型
 	auto cubeOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID[0]);
@@ -347,12 +366,13 @@ int main(int argc, char ** argv) {
 		singleColorShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 
 		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
 
 		glBindVertexArray(cubeVAO);
 		glEnable(GL_STENCIL_TEST);
 		for (size_t i = 0; i < 10; i++)
 		{
+			glCullFace( i%2==0? GL_FRONT:GL_BACK);
+
 			glm::mat4 model(1.0f);
 			float t = glfwGetTime();
 			model = glm::translate(model, cubePositions[i]);
@@ -393,7 +413,6 @@ int main(int argc, char ** argv) {
 		glDisable(GL_CULL_FACE);
 	});
 
-	//------------ 渲染球体模型
 	auto sphereOp = new LambdaOp([&]() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID[1]);
@@ -419,7 +438,6 @@ int main(int argc, char ** argv) {
 		glDrawElements(GL_TRIANGLES, sphere.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 	});
 
-	//------------ 渲染 nanosuit
 	auto nanosuitOp = new LambdaOp([&]() {
 		nanosuitShader.Use();
 
@@ -442,7 +460,7 @@ int main(int argc, char ** argv) {
 
 			float angle = 20.0f * i;
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			model = glm::rotate(model, 1.4f * t, glm::vec3(1.0f, 1.0f, 1.0f));
+			model = glm::rotate(model, (1.4f+0.25f*i) * t, glm::vec3(1.0f, 1.0f, 1.0f));
 
 			nanosuitShader.SetMat4f("model", model);
 
@@ -466,7 +484,7 @@ int main(int argc, char ** argv) {
 		}
 	});
 
-	auto grass_glassOp = new LambdaOp([&]() {
+	auto grassOp = new LambdaOp([&]() {
 		transparentShader.Use();
 		transparentShader.SetMat4f("view", mainCamera.GetViewMatrix());
 		transparentShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
@@ -482,7 +500,13 @@ int main(int argc, char ** argv) {
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
-		
+	});
+
+	auto glassOp = new LambdaOp([&]() {
+		transparentShader.Use();
+		transparentShader.SetMat4f("view", mainCamera.GetViewMatrix());
+		transparentShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		glBindVertexArray(transparentVAO);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID[6]);
@@ -517,6 +541,72 @@ int main(int argc, char ** argv) {
 		glDepthFunc(GL_LESS); // set depth function back to default
 	});
 	
+	auto reflctNanosuitOp = new LambdaOp([&]() {
+		reflectShader.Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.GetID());
+
+		reflectShader.SetVec3f("viewPos", mainCamera.GetPos());
+		// view/projection transformations
+		reflectShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		reflectShader.SetMat4f("view", mainCamera.GetViewMatrix());
+
+		for (size_t i = 0; i < 10; i++)
+		{
+			glm::mat4 model(1.0f);
+			float t = glfwGetTime();
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::rotate(model, 0.2f*(1.4f + 0.2f*i) * t, glm::vec3(1.0f, 1.0f, 1.0f));
+
+			model = glm::translate(model, glm::vec3(0.0f, 7.0f, -10.0f)); // translate it down so it's at the center of the scene
+			model = glm::translate(model, cubePositions[i]);
+
+			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)*(sinf(0.1f*i + t)*0.5f) + 1.0f);
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+
+			reflectShader.SetMat4f("model", model);
+
+			nanosuit.Draw(reflectShader);
+		}
+	});
+
+	auto refractNanosuitOp = new LambdaOp([&]() {
+		refractShader.Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.GetID());
+
+		refractShader.SetVec3f("viewPos", mainCamera.GetPos());
+		// view/projection transformations
+		refractShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
+		refractShader.SetMat4f("view", mainCamera.GetViewMatrix());
+
+		for (size_t i = 0; i < 10; i++)
+		{
+			glm::mat4 model(1.0f);
+			float t = glfwGetTime();
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::rotate(model, 0.2f*(1.4f + 0.2f*i) * t, glm::vec3(1.0f, 1.0f, 1.0f));
+
+			model = glm::translate(model, glm::vec3(1.25f, 7.0f, -10.0f)); // translate it down so it's at the center of the scene
+			model = glm::translate(model, cubePositions[i]);
+
+			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)*(sinf(0.1f*i + t)*0.5f) + 1.0f);
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+
+			refractShader.SetMat4f("model", model);
+
+			nanosuit.Draw(refractShader);
+		}
+	});
+
+	auto opaqueQueue = new OpQueue();
+	(*opaqueQueue) << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp << reflctNanosuitOp << refractNanosuitOp << skyboxOp;
+
+	auto transparentQueue = new OpQueue();
+	(*transparentQueue) << grassOp << glassOp;
+
 	//------------ 离屏渲染
 	auto offScreanOp = new OpNode(new LambdaOp([&]() {
 		// bind to framebuffer and draw scene as we normally would to color texture 
@@ -534,7 +624,7 @@ int main(int argc, char ** argv) {
 		// clear all relevant buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}));
-	(*offScreanOp) << cubeOp << panelOp << sphereOp << nanosuitOp << lightOp << skyboxOp << grass_glassOp;
+	(*offScreanOp) << opaqueQueue << transparentQueue;
 	
 	//------------ 后期处理
 	auto postProcessOp = new LambdaOp([&](){

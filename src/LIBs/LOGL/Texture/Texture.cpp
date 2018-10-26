@@ -17,7 +17,6 @@ Texture::Texture(const char * path, bool flip){
 	InitTexture(img);
 }
 
-
 Texture::Texture(const vector<string> & skybox) {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, id);

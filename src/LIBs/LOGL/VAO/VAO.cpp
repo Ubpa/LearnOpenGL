@@ -1,6 +1,5 @@
 #include <LOGL/VAO.h>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 using namespace std;
 using namespace LOGL;
