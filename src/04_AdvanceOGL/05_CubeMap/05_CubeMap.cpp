@@ -13,6 +13,7 @@
 #include <LOGL/Camera.h>
 #include <LOGL/Texture.h>
 #include <LOGL/Model.h>
+#include <LOGL/VAO.h>
 
 #include "Defines.h"
 #include "RegisterInput.h"
@@ -37,150 +38,49 @@ int main(int argc, char ** argv) {
 	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, windowTitle.c_str());
 	Glfw::GetInstance()->LockCursor();
 	
+
 	//------------ 平面
-	size_t panelVAO;
-	glGenVertexArrays(1, &panelVAO);
-	glBindVertexArray(panelVAO);
-	size_t panelVBO;
-	glGenBuffers(1, &panelVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, panelVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	size_t panelVAO = VAO(&(planeVertices[0]), sizeof(planeVertices), { 3,3,2 }).GetID();
 
-	//------------ 正方体
-	Cube cube;
-	size_t cubeVAO;
-	glGenVertexArrays(1, &cubeVAO);
-	glBindVertexArray(cubeVAO);
-
-	size_t cubeVBO[3];
-	glGenBuffers(3, cubeVBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, cube.GetVertexArrSize(), cube.GetVertexArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[1]);
-	glBufferData(GL_ARRAY_BUFFER, cube.GetNormalArrSize(), cube.GetNormalArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO[2]);
-	glBufferData(GL_ARRAY_BUFFER, cube.GetTexCoordsArrSize(), cube.GetTexCoordsArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	size_t cubeEBO;
-	glGenBuffers(1, &cubeEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.GetIndexArrSize(), cube.GetIndexArr(), GL_STATIC_DRAW);
-	
 
 	//------------ 天空盒
 	Cube skybox;
-	size_t VAO_Skybox;
-	glGenVertexArrays(1, &VAO_Skybox);
-	glBindVertexArray(VAO_Skybox);
+	size_t VAO_Skybox = VAO(skybox.GetVertexArr(), skybox.GetVertexArrSize(), { 3 },
+		skybox.GetIndexArr(), skybox.GetIndexArrSize()).GetID();
 
-	size_t VBO_Skybox;
-	glGenBuffers(1, &VBO_Skybox);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_Skybox);
-	glBufferData(GL_ARRAY_BUFFER, skybox.GetVertexArrSize(), skybox.GetVertexArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)(0*sizeof(float)));
-	glEnableVertexAttribArray(0);
 
-	size_t EBO_Skybox;
-	glGenBuffers(1, &EBO_Skybox);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_Skybox);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, skybox.GetIndexArrSize(), skybox.GetIndexArr(), GL_STATIC_DRAW);
+	//------------ 灯
+	size_t lightVAO = VAO(&(data_vertices[0]), sizeof(data_vertices), { 3, 2 }).GetID();
+
+
+	//------------ trasparent panel
+	size_t transparentVAO = VAO(&(transparentVertices[0]), sizeof(transparentVertices), { 3,3,2 }).GetID();
+
+
+	//------------ 屏幕
+	size_t screanVAO = VAO(&(data_ScreanVertices[0]), sizeof(data_ScreanVertices), { 2,2 }).GetID();
+
+
+	//------------ 正方体
+	Cube cube;
+	vector<VAO::VBO_DataPatch> cube_Vec_VBO_Data_Patch = {
+		{cube.GetVertexArr(), cube.GetVertexArrSize(), 3},
+		{cube.GetNormalArr(), cube.GetNormalArrSize(), 3},
+		{cube.GetTexCoordsArr(), cube.GetTexCoordsArrSize(), 2},
+	};
+	size_t cubeVAO = VAO(cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize()).GetID();
+
 
 	//------------ 球
 	Sphere sphere = Sphere(30);
+	vector<VAO::VBO_DataPatch> sphere_Vec_VBO_Data_Patch = {
+		{sphere.GetVertexArr(), sphere.GetVertexArrSize(), 3},
+		{sphere.GetNormalArr(), sphere.GetNormalArrSize(), 3},
+		{sphere.GetTexCoordsArr(), sphere.GetTexCoordsArrSize(), 2},
+	};
+	size_t sphereVAO = VAO(sphere_Vec_VBO_Data_Patch, sphere.GetIndexArr(), sphere.GetIndexArrSize()).GetID();
 
-	size_t sphereVAO;
-	glGenVertexArrays(1, &sphereVAO);
-	glBindVertexArray(sphereVAO);
-
-	size_t sphereVertexVBO;
-	glGenBuffers(1, &sphereVertexVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereVertexVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetVertexArrSize(), sphere.GetVertexArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-
-	size_t sphereNormalVBO;
-	glGenBuffers(1, &sphereNormalVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereNormalVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetNormalArrSize(), sphere.GetNormalArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	size_t sphereTexCoordsVBO;
-	glGenBuffers(1, &sphereTexCoordsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, sphereTexCoordsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sphere.GetTexCoordsArrSize(), sphere.GetTexCoordsArr(), GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	size_t sphereEBO;
-	glGenBuffers(1, &sphereEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphere.GetIndexArrSize(), sphere.GetIndexArr(), GL_STATIC_DRAW);
 	
-	
-	//------------ 灯
-	size_t lightVBO;
-	glGenBuffers(1, &lightVBO);
-	size_t lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-
-	glBindVertexArray(lightVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(data_vertices), data_vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-
-	//------------ trasparent panel
-	size_t transparentVBO;
-	glGenBuffers(1, &transparentVBO);
-	size_t transparentVAO;
-	glGenVertexArrays(1, &transparentVAO);
-
-	glBindVertexArray(transparentVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	//------------ 屏幕
-	size_t screanVAO;
-	glGenVertexArrays(1, &screanVAO);
-	glBindVertexArray(screanVAO);
-
-	size_t screanVBO;
-	glGenBuffers(1, &screanVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, screanVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(data_ScreanVertices), data_ScreanVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-
 	//------------ 纹理
 	const int textureNum = 7;
 	size_t textureID[textureNum];

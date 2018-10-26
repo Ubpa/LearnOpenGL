@@ -45,6 +45,14 @@
     -04_FrameBuffer
     -05_CubeMap
   /LIBs
+    -glad
+    /LOGL
+      -Camera
+      -Glfw
+      -Mesh
+      -Model
+      -Shader
+      -Texture
     /Utility
       -ArgManager
       -Config
@@ -54,10 +62,6 @@
       -Image
       -Operation: Operation, LambdaOp, InfoLambdaOp, OpQueue
       -Shape: Shape, Cube, Sphere
-    -Camera
-    -glad
-    -Glfw
-    -Shader
 ```
 
 # 2. 使用方法
