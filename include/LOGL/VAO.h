@@ -14,14 +14,17 @@ namespace LOGL {
 
 		VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLen);
 		VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLen, size_t const * index, size_t indexSize);
-		VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch);
-		VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, size_t const * index, size_t indexSize);
+		VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, const std::vector<size_t> & divisors = std::vector<size_t>());
+		VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, size_t const * index, size_t indexSize, const std::vector<size_t> & divisors = std::vector<size_t>());
+
 		size_t GetID() const;
+		size_t GetAttrNum() const;
 		bool IsValid() const;
 		bool Use() const;
 	private:
 		bool GenBindEBO(size_t const * index, size_t indexSize);
 		//------------
+		size_t attrNum;
 		size_t ID;
 		bool isValid;
 	};

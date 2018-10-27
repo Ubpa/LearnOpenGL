@@ -44,6 +44,8 @@
   -04_FrameBuffer
   -05_CubeMap
   -06_UBO
+  -07_GS
+  -08_Instance
 /LIBs
   -glad
   /LOGL

@@ -11,6 +11,7 @@
 namespace Define{
 	const size_t val_windowWidth = 1024;
 	const size_t val_windowHeight = 576;
+	const float PI = 3.1415926;
 	
 	const std::string str_Img_Container = "/data/textures/container.jpg";
 	const std::string str_Img_Container2 = "/data/textures/container2.png";

@@ -4,7 +4,7 @@
 using namespace std;
 using namespace LOGL;
 
-VAO::VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLen) {
+VAO::VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLen){
 	isValid = false;
 	glGenVertexArrays(1, &ID);
 	glBindVertexArray(ID);
@@ -21,6 +21,7 @@ VAO::VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLe
 		glEnableVertexAttribArray(i);
 		accu += attrLen[i];
 	}
+	attrNum = attrLen.size();
 	isValid = true;
 }
 
@@ -29,7 +30,7 @@ VAO::VAO(float const * data, size_t dataSize, const std::vector<size_t> & attrLe
 	isValid &= GenBindEBO(index, indexSize);
 }
 
-VAO::VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch) {
+VAO::VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, const std::vector<size_t> & divisors) {
 	isValid = false;
 	glGenVertexArrays(1, &ID);
 	glBindVertexArray(ID);
@@ -42,13 +43,15 @@ VAO::VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch) {
 		glBufferData(GL_ARRAY_BUFFER, dataPatch.dataSize, dataPatch.data, GL_STATIC_DRAW);
 		glVertexAttribPointer(i, dataPatch.attrLen, GL_FLOAT, GL_FALSE, dataPatch.attrLen * sizeof(float), (void*)(0 * sizeof(float)));
 		glEnableVertexAttribArray(i);
+		if(divisors.size()!=0 && divisors[i]>0)
+			glVertexAttribDivisor(i, divisors[i]);
 	}
 
 	isValid = true;
 }
 
-VAO::VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, size_t const * index, size_t indexSize)
-	: VAO(vec_VBO_DataPatch){
+VAO::VAO(const std::vector<VBO_DataPatch> & vec_VBO_DataPatch, size_t const * index, size_t indexSize, const std::vector<size_t> & divisors)
+	: VAO(vec_VBO_DataPatch, divisors){
 	isValid &= GenBindEBO(index, indexSize);
 }
 
@@ -61,6 +64,10 @@ bool VAO::GenBindEBO(size_t const * index, size_t indexSize) {
 }
 
 size_t VAO::GetID() const {
+	return ID;
+}
+
+size_t VAO::GetAttrNum() const {
 	return ID;
 }
 
