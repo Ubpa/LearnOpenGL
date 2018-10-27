@@ -110,6 +110,10 @@ void Shader::SetMat4f(const std::string &name, const glm::mat4 mat4) const{
 	SetMat4f(name, glm::value_ptr(mat4));
 }
 
+void Shader::UniformBlockBind(const std::string &name, size_t bindPoint) {
+	glUniformBlockBinding(ID, glGetUniformBlockIndex(ID, name.c_str()), bindPoint);
+}
+
 int Shader::CheckCompileErrors(size_t shader, string type){
 	int success;
 	char infoLog[1024];

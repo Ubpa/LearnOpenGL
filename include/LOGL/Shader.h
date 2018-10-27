@@ -30,6 +30,9 @@ namespace LOGL {
 		void SetVec4f(const std::string &name, const glm::vec4 & v) const;
 		void SetMat4f(const std::string &name, const float * matValue) const;
 		void SetMat4f(const std::string &name, const glm::mat4 mat4) const;
+
+		//------------
+		void UniformBlockBind(const std::string &name, size_t bindPoint);
 	private:
 		static size_t curID;
 		// utility function for checking shader compilation/linking errors.

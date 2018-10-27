@@ -277,6 +277,22 @@ int main(int argc, char ** argv) {
 		pShaders[i]->SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 	}
 
+	//------------ Camera Matrixs Uniform Block
+	size_t cameraMatrixsUBO;
+	glGenBuffers(1, &cameraMatrixsUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraMatrixsUBO);
+	glBufferData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4), NULL, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraMatrixsUBO);
+
+	lightShader.UniformBlockBind("CameraMatrixs", 0);
+	lightingShader.UniformBlockBind("CameraMatrixs", 0);
+	nanosuitShader.UniformBlockBind("CameraMatrixs", 0);
+	reflectShader.UniformBlockBind("CameraMatrixs", 0);
+	refractShader.UniformBlockBind("CameraMatrixs", 0);
+	singleColorShader.UniformBlockBind("CameraMatrixs", 0);
+	skyboxShader.UniformBlockBind("CameraMatrixs", 0);
+	transparentShader.UniformBlockBind("CameraMatrixs", 0);
+
 	//------------ nanosuit
 	Model nanosuit(rootPath + str_Obj_Nanosuit);
 
@@ -318,6 +334,14 @@ int main(int argc, char ** argv) {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 	});
+
+	//------------ 更新相机
+	auto cameraMatrixsUBO_Update = new LambdaOp([&]() {
+		glBindBuffer(GL_UNIFORM_BUFFER, cameraMatrixsUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(mainCamera.GetViewMatrix()));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(mainCamera.GetProjectionMatrix()));
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	});
 	
 	//------------ 模型渲染
 
@@ -334,8 +358,6 @@ int main(int argc, char ** argv) {
 		lightingShader.SetVec3f("spotLight.position", mainCamera.GetPos());
 		lightingShader.SetVec3f("spotLight.direction", mainCamera.GetFront());
 
-		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		lightingShader.SetMat4f("model", glm::mat4(1.0f));
 		
 		glBindVertexArray(panelVAO);
@@ -356,14 +378,8 @@ int main(int argc, char ** argv) {
 		lightingShader.SetVec3f("spotLight.position", mainCamera.GetPos());
 		lightingShader.SetVec3f("spotLight.direction", mainCamera.GetFront());
 
-		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
-
 
 		singleColorShader.Use();
-
-		singleColorShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		singleColorShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 
 		glEnable(GL_CULL_FACE);
 
@@ -427,8 +443,6 @@ int main(int argc, char ** argv) {
 		lightingShader.SetVec3f("spotLight.position", mainCamera.GetPos());
 		lightingShader.SetVec3f("spotLight.direction", mainCamera.GetFront());
 
-		lightingShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		lightingShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glm::mat4 model = glm::mat4(1.0f);
 		float t = glfwGetTime();
 		model = glm::translate(model, glm::vec3(4.0f, -0.5f + sinf(2*t), -1.5f));
@@ -445,8 +459,6 @@ int main(int argc, char ** argv) {
 		nanosuitShader.SetVec3f("spotLight.position", mainCamera.GetPos());
 		nanosuitShader.SetVec3f("spotLight.direction", mainCamera.GetFront());
 		// view/projection transformations
-		nanosuitShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
-		nanosuitShader.SetMat4f("view", mainCamera.GetViewMatrix());
 
 		for (size_t i = 0; i < 10; i++)
 		{
@@ -470,8 +482,6 @@ int main(int argc, char ** argv) {
 
 	auto lightOp = new LambdaOp([&]() {
 		lightShader.Use();
-		lightShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		lightShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		
 		for (size_t i = 0; i < 4; i++) {
 			glm::mat4 model = glm::mat4(1.0f);
@@ -486,8 +496,6 @@ int main(int argc, char ** argv) {
 
 	auto grassOp = new LambdaOp([&]() {
 		transparentShader.Use();
-		transparentShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		transparentShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glBindVertexArray(transparentVAO);
 		
 		glActiveTexture(GL_TEXTURE0);
@@ -504,8 +512,6 @@ int main(int argc, char ** argv) {
 
 	auto glassOp = new LambdaOp([&]() {
 		transparentShader.Use();
-		transparentShader.SetMat4f("view", mainCamera.GetViewMatrix());
-		transparentShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glBindVertexArray(transparentVAO);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -533,9 +539,6 @@ int main(int argc, char ** argv) {
 		skyboxShader.Use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture.GetID());
-		glm::mat4 view = glm::mat4(glm::mat3(mainCamera.GetViewMatrix()));
-		skyboxShader.SetMat4f("view", view);
-		skyboxShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		glBindVertexArray(VAO_Skybox);
 		glDrawElements(GL_TRIANGLES, skybox.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 		glDepthFunc(GL_LESS); // set depth function back to default
@@ -548,8 +551,6 @@ int main(int argc, char ** argv) {
 
 		reflectShader.SetVec3f("viewPos", mainCamera.GetPos());
 		// view/projection transformations
-		reflectShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
-		reflectShader.SetMat4f("view", mainCamera.GetViewMatrix());
 
 		for (size_t i = 0; i < 10; i++)
 		{
@@ -578,8 +579,6 @@ int main(int argc, char ** argv) {
 
 		refractShader.SetVec3f("viewPos", mainCamera.GetPos());
 		// view/projection transformations
-		refractShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
-		refractShader.SetMat4f("view", mainCamera.GetViewMatrix());
 
 		for (size_t i = 0; i < 10; i++)
 		{
@@ -653,7 +652,7 @@ int main(int argc, char ** argv) {
 	
 	//------------- 整合
 	auto opQueue = new OpQueue;
-	(*opQueue) << registerInputOp << timeOp << renderOp << endOp;
+	(*opQueue) << registerInputOp << timeOp << cameraMatrixsUBO_Update << renderOp << endOp;
 	
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
