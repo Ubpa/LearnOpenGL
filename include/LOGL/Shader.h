@@ -12,7 +12,7 @@ namespace LOGL {
 	class Shader{
 	public:
 		// constructor generates the shader on the fly
-		Shader(const std::string &  vertexPath, const std::string & fragmentPath);
+		Shader(const std::string &  vertexPath, const std::string & fragmentPath, const std::string & geometryPath = "");
 
 		size_t GetID() const;
 		bool IsValid() const;

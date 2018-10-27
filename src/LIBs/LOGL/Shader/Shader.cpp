@@ -7,10 +7,12 @@ using namespace Ubpa;
 
 size_t Shader::curID = 0;
 
-Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath) {
+Shader::Shader(const string & vertexPath, const string & fragmentPath, const string & geometryPath) {
 	valid = true;
 	File vsF(vertexPath, File::Mode::READ);
 	File fsF(fragmentPath, File::Mode::READ);
+	bool hasGS = geometryPath.size() > 0;
+
 	string vsStr = vsF.ReadAll();
 	string fsStr = fsF.ReadAll();
 	if (vsStr.size() == 0 || fsStr.size() == 0) {
@@ -20,7 +22,7 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath)
 	}
 	const char * vsCStr = vsStr.c_str();
 	const char * fsCStr = fsStr.c_str();
-	//------------
+
 	// vertex shader
 	size_t glvs = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(glvs, 1, &vsCStr, NULL);
@@ -30,6 +32,7 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath)
 		valid = false;
 		return;
 	}
+
 	// fragment Shader
 	size_t glfs = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(glfs, 1, &fsCStr, NULL);
@@ -39,19 +42,48 @@ Shader::Shader(const std::string & vertexPath, const std::string & fragmentPath)
 		valid = false;
 		return;
 	}
+
+	// geometry Sahder
+	size_t glgs = 0;
+	if (hasGS) {
+		File gsF(geometryPath, File::Mode::READ);
+		string gsStr = gsF.ReadAll();
+		if (gsStr.size() == 0) {
+			cout << geometryPath << " read failed.\n";
+			valid = false;
+			return;
+		}
+
+		const char * gsCStr = gsStr.c_str();
+		glgs = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(glgs, 1, &gsCStr, NULL);
+		glCompileShader(glgs);
+		if (!CheckCompileErrors(glgs, "GEOMETRY")) {
+			cout << geometryPath << " compiles error\n";
+			valid = false;
+			return;
+		}
+	}
+
 	// shader Program
 	ID = glCreateProgram();
 	glAttachShader(ID, glvs);
 	glAttachShader(ID, glfs);
+	if(hasGS)
+		glAttachShader(ID, glgs);
 	glLinkProgram(ID);
 	if (!CheckCompileErrors(ID, "PROGRAM")) {
-		cout << vertexPath << " and " << fragmentPath << " link failed.\n";
+		if(hasGS)
+			cout << vertexPath << ", " << fragmentPath << " and " << geometryPath << " link failed.\n";
+		else
+			cout << vertexPath << " and " << fragmentPath << " link failed.\n";
 		valid = false;
 		return;
 	}
 	// delete the shaders as they're linked into our program now and no longer necessary
 	glDeleteShader(glvs);
 	glDeleteShader(glfs);
+	glDeleteShader(glgs);
 }
 
 size_t Shader::GetID() const { return ID; }
@@ -65,12 +97,12 @@ bool Shader::Use() const{
 	return valid;
 }
 
-void Shader::SetBool(const std::string &name, bool value) const{
+void Shader::SetBool(const string &name, bool value) const{
 	Use();
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
-void Shader::SetInt(const std::string &name, int value) const{
+void Shader::SetInt(const string &name, int value) const{
 	Use();
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
@@ -80,12 +112,12 @@ void Shader::SetFloat(const string &name, float value) const{
 	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
-void Shader::SetVec3f(const std::string &name, float value0, float value1, float value2) const {
+void Shader::SetVec3f(const string &name, float value0, float value1, float value2) const {
 	Use();
 	glUniform3f(glGetUniformLocation(ID, name.c_str()), value0, value1, value2);
 }
 
-void Shader::SetVec3f(const std::string &name, const glm::vec3 & v) const {
+void Shader::SetVec3f(const string &name, const glm::vec3 & v) const {
 	Use();
 	SetVec3f(name, v.x, v.y, v.z);
 }
@@ -95,22 +127,22 @@ void Shader::SetVec4f(const string &name, float value0, float value1, float valu
 	glUniform4f(glGetUniformLocation(ID, name.c_str()), value0, value1, value2, value3);
 }
 
-void Shader::SetVec4f(const std::string &name, const glm::vec4 & v) const {
+void Shader::SetVec4f(const string &name, const glm::vec4 & v) const {
 	Use();
 	SetVec4f(name, v.x, v.y, v.z, v.w);
 }
 
-void Shader::SetMat4f(const std::string &name, const float * matValue) const{
+void Shader::SetMat4f(const string &name, const float * matValue) const{
 	Use();
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, matValue);
 }
 
-void Shader::SetMat4f(const std::string &name, const glm::mat4 mat4) const{
+void Shader::SetMat4f(const string &name, const glm::mat4 mat4) const{
 	Use();
 	SetMat4f(name, glm::value_ptr(mat4));
 }
 
-void Shader::UniformBlockBind(const std::string &name, size_t bindPoint) {
+void Shader::UniformBlockBind(const string &name, size_t bindPoint) {
 	glUniformBlockBinding(ID, glGetUniformBlockIndex(ID, name.c_str()), bindPoint);
 }
 
@@ -121,14 +153,14 @@ int Shader::CheckCompileErrors(size_t shader, string type){
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (!success){
 			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+			cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << endl;
 		}
 	}else{
 		glGetProgramiv(shader, GL_LINK_STATUS, &success);
 		if (!success)
 		{
 			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-			std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+			cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << endl;
 		}
 	}
 	return success;
