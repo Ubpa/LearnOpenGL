@@ -11,8 +11,14 @@ OpNode::OpNode(Operation * preOp, Operation * postOp, bool isHold)
 	this->postOp = postOp != nullptr ? Operation::ToPtr(postOp) : nullptr;
 }
 
+OpNode::OpNode(const std::function<void()> & preOp, const std::function<void()> & postOp, bool isHold)
+	: OpQueue(isHold){
+	this->preOp = preOp != nullptr ? Operation::ToPtr(new LambdaOp(preOp)) : nullptr;
+	this->postOp = postOp != nullptr ? Operation::ToPtr(new LambdaOp(postOp)) : nullptr;
+}
+
 OpNode::~OpNode() {
-	printf("Delete OpNode\n");
+	printf("INFO: Delete OpNode\n");
 }
 //------------
 void OpNode::SetPreOp(const Ptr<Operation> & preOp) {

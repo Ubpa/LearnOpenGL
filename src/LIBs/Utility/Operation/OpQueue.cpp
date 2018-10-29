@@ -8,7 +8,7 @@ using namespace std;
 OpQueue::OpQueue(bool isHold)
 	: Operation(isHold) { }
 
-OpQueue::~OpQueue() { printf("Delete OpQueue\n"); }
+OpQueue::~OpQueue() { printf("INFO: Delete OpQueue\n"); }
 
 //------------
 

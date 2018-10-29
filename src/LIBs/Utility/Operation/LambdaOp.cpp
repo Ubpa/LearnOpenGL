@@ -5,7 +5,7 @@ using namespace Ubpa;
 LambdaOp::LambdaOp(const std::function<void()> & op, bool isHold)
 	: op(op), Operation(isHold) { }
 
-LambdaOp::~LambdaOp() { printf("Delete LambdaOp\n"); };
+LambdaOp::~LambdaOp() { printf("INFO: Delete LambdaOp\n"); };
 
 
 void LambdaOp::SetOp(const std::function<void()> & op) {

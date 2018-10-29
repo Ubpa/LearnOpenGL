@@ -7,19 +7,32 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-Texture::Texture(const char * path, bool flip){
-	Image img(path, flip);
-	isValid = img.IsValid();
-	if (isValid == false) {
-		printf("Texture [%s] load failed\n", path);
-		return;
-	}
-	InitTexture(img);
+Texture::Texture() : ID(0), isValid(false) { }
+
+Texture::Texture(const std::string & path, bool flip){
+	Load(path, flip);
 }
 
 Texture::Texture(const vector<string> & skybox) {
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+	Load(skybox);
+}
+
+size_t Texture::GetID() const{
+	return ID;
+}
+
+bool Texture::IsValid() const{
+	return isValid;
+}
+
+bool Texture::Load(const std::vector<std::string> & skybox) {
+	if (isValid) {
+		printf("ERROR: The texture is valid already.\n");
+		return false;
+	}
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
 
 	// loads a cubemap texture from 6 individual texture faces
 	// order:
@@ -34,12 +47,12 @@ Texture::Texture(const vector<string> & skybox) {
 	for (size_t i = 0; i < skybox.size(); i++)
 	{
 		Image img(skybox[i].c_str());
-		if (!img.IsValid()){
+		if (!img.IsValid()) {
 			printf("Cubemap texture failed to load at path: %s\n", skybox[i].c_str());
 			isValid = false;
-			return;
+			return false;
 		}
-		
+
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, img.GetWidth(), img.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, img.GetConstData());
 	}
 
@@ -48,17 +61,23 @@ Texture::Texture(const vector<string> & skybox) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return true;
 }
 
-size_t Texture::GetID() const{
-	return id;
-}
+bool Texture::Load(const std::string & path, bool flip) {
+	if (isValid) {
+		printf("ERROR: The texture is valid already.\n");
+		return false;
+	}
+	
+	Image img(path.c_str(), flip);
+	isValid = img.IsValid();
+	if (isValid == false) {
+		printf("ERROR: Texture [%s] load failed\n", path);
+		return false;
+	}
 
-bool Texture::IsValid() const{
-	return isValid;
-}
-
-void Texture::InitTexture(const Image & img) {
 	GLenum format;
 	int nrComponents = img.GetChannel();
 	if (nrComponents == 1)
@@ -68,8 +87,8 @@ void Texture::InitTexture(const Image & img) {
 	else if (nrComponents == 4)
 		format = GL_RGBA;
 
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
 
 	/*
 	@1 ÎÆÀíÄ¿±ê
@@ -90,4 +109,15 @@ void Texture::InitTexture(const Image & img) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	return true;
+}
+
+bool Texture::Use(size_t id) {
+	if (!isValid)
+		return false;
+
+	glActiveTexture(GL_TEXTURE0 + id);
+	glBindTexture(GL_TEXTURE_2D, ID);
+	return true;
 }

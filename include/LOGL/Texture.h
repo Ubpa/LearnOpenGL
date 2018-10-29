@@ -8,14 +8,20 @@
 namespace LOGL {
 	class Texture {
 	public:
+		Texture();
 		Texture(const std::vector<std::string> & skybox);
-		Texture(const char * path, bool flip = false);
+		Texture(const std::string & path, bool flip = false);
+
+		bool Load(const std::vector<std::string> & skybox);
+		bool Load(const std::string & path, bool flip = false);
+
+		bool Use(size_t id = 0);
+
 		size_t GetID() const;
 		bool IsValid() const;
 	private:
-		void InitTexture(const Ubpa::Image & img);
 
-		size_t id;
+		size_t ID;
 		bool isValid;
 	};
 }

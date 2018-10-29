@@ -1,5 +1,5 @@
-#ifndef _STATIC_CONFIG_H_
-#define _STATIC_CONFIG_H_
+#ifndef _COMMOM_DEFINE_H_
+#define _COMMOM_DEFINE_H_
 
 #include <string>
 #include <vector>
@@ -22,6 +22,7 @@ namespace Define{
 	const std::string str_Img_Marble = "/data/textures/marble.jpg";
 	const std::string str_Img_Grass = "/data/textures/grass.png";
 	const std::string str_Img_Window = "/data/textures/window.png";
+	const std::string str_Img_Wood = "/data/textures/wood.png";
 	
 	const std::vector<std::string> str_Vec_Img_Skybox = {
 		"/data/textures/skybox/right.jpg",
@@ -169,4 +170,4 @@ namespace Define{
 	};
 }
 
-#endif// !_STATIC_CONFIG_H_
+#endif// !_COMMOM_DEFINE_H_

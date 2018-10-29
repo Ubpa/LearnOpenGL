@@ -2,11 +2,13 @@
 #define _OPNODE_H_
 
 #include <Utility/OpQueue.h>
+#include <Utility/LambdaOp.h>
 
 namespace Ubpa {
 	class OpNode : public OpQueue{
 	public:
 		OpNode(const Ptr<Operation> & preOp = nullptr, const Ptr<Operation> & postOp = nullptr, bool isHold = true);
+		OpNode(const std::function<void()> & preOp = nullptr, const std::function<void()> & postOp = nullptr, bool isHold = true);
 		OpNode(Operation * preOp = nullptr, Operation * postOp = nullptr, bool isHold = true);
 		//------------
 		void SetPreOp(const Ptr<Operation> & preOp);
