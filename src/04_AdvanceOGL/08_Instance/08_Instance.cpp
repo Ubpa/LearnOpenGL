@@ -14,6 +14,7 @@
 #include <LOGL/Texture.h>
 #include <LOGL/Model.h>
 #include <LOGL/VAO.h>
+#include <LOGL/FBO.h>
 
 #include "Defines.h"
 #include "RegisterInput.h"
@@ -366,59 +367,12 @@ int main(int argc, char ** argv) {
 	Model nanosuit(rootPath + str_Obj_Nanosuit);
 
 	//------------ Ö¡»º´æ
-	const float samples = 4;
-	size_t FBO;
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
-	size_t offScreanColorBuffer;
-	glGenTextures(1, &offScreanColorBuffer);
-	
-	//glBindTexture(GL_TEXTURE_2D, offScreanColorBuffer);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, offScreanColorBuffer);
-	
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, val_windowWidth, val_windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, val_windowWidth, val_windowHeight, GL_TRUE);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, offScreanColorBuffer, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, offScreanColorBuffer, 0);
-
-	size_t RBO;
-	glGenRenderbuffers(1, &RBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, val_windowWidth, val_windowHeight);
-	glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, val_windowWidth, val_windowHeight);
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		printf("Framebuffer is not complete!\n");
-		return 1;
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	FBO FBO_MSAA(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_MSAA);
 
 
 	//------------ ÖÐ½é»º´æ
 	// configure second post-processing framebuffer
-	unsigned int intermediateFBO;
-	glGenFramebuffers(1, &intermediateFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
-	// create a color attachment texture
-	unsigned int screenTexture;
-	glGenTextures(1, &screenTexture);
-	glBindTexture(GL_TEXTURE_2D, screenTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, val_windowWidth, val_windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);	// we only need a color buffer
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	FBO FBO_Intermediate(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_COLOR);
 
 	
 	//------------ ÊäÈë
@@ -756,7 +710,7 @@ int main(int argc, char ** argv) {
 	//------------ ÀëÆÁäÖÈ¾
 	auto offScreanOp = new OpNode(new LambdaOp([&]() {
 		// bind to framebuffer and draw scene as we normally would to color texture 
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		FBO_MSAA.Use();
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -767,11 +721,9 @@ int main(int argc, char ** argv) {
 	}),
 		new LambdaOp([&]() {
 		//now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-		glBlitFramebuffer(0, 0, val_windowWidth, val_windowHeight, 0, 0, val_windowWidth, val_windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		FBO_MSAA.PassTo(FBO_Intermediate, FBO::ENUM_PASS_COLOR);
 		// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		FBO::UseDefault();
 		// clear all relevant buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}));
@@ -784,7 +736,7 @@ int main(int argc, char ** argv) {
 		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 		glDisable(GL_STENCIL_TEST);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, screenTexture);	// use the color offScreanColorBuffer texture as the texture of the quad plane
+		glBindTexture(GL_TEXTURE_2D, FBO_Intermediate.GetColorBufferID());	// use the color offScreanColorBuffer texture as the texture of the quad plane
 		postProcessShader.Use();
 		glBindVertexArray(screanVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
