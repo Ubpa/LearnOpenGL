@@ -8,7 +8,7 @@
 namespace LOGL {
 	class Texture {
 	public:
-		Texture();
+		Texture(size_t ID = 0);
 		Texture(const std::vector<std::string> & skybox);
 		Texture(const std::string & path, bool flip = false, bool gammaCorrection = false);
 

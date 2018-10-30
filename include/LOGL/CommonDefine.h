@@ -9,8 +9,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Define{
-	const size_t val_windowWidth = 1024;
-	const size_t val_windowHeight = 576;
+	const size_t val_windowWidth = 1280;
+	const size_t val_windowHeight = 720;
 	const float PI = 3.1415926;
 	
 	const std::string str_Img_Container = "/data/textures/container.jpg";

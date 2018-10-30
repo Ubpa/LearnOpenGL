@@ -23,6 +23,10 @@ FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 		if (!GenFBO_COLOR(width, height))
 			printf("GenFBO_COLOR fail\n");
 		break;
+	case LOGL::FBO::ENUM_TYPE_DEPTH:
+		if (!GenFBO_DEPTH(width, height))
+			printf("GenFBO_DEPTH fail\n");
+		break;
 	default:
 		isValid = false;
 		break;
@@ -101,6 +105,32 @@ bool FBO::GenFBO_COLOR(size_t width, size_t height) {
 	return isValid;
 }
 
+bool FBO::GenFBO_DEPTH(size_t width, size_t height) {
+	glGenFramebuffers(1, &ID);
+	// create depth texture
+	glGenTextures(1, &depthBufferID);
+	glBindTexture(GL_TEXTURE_2D, depthBufferID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBufferID, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	isValid = IsComplete();
+	if (!isValid)
+		printf("Framebuffer is not complete!\n");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return isValid;
+}
+
 size_t FBO::GetID() const {
 	if (!isValid)
 		return 0;
@@ -129,6 +159,9 @@ bool FBO::IsComplete() const {
 }
 
 size_t FBO::GetColorBufferID() const {
+	if (!isValid)
+		return 0;
+
 	if (type != ENUM_TYPE_BASIC
 		&& type != ENUM_TYPE_MSAA
 		&& type != ENUM_TYPE_COLOR)
@@ -146,11 +179,22 @@ bool FBO::PassTo(const FBO & fbo, ENUM_PASS_TYPE passType) const {
 	return true;
 }
 
+
+size_t FBO::GetDepthBufferID() const {
+	if (!isValid)
+		return 0;
+
+	if (type != ENUM_TYPE_DEPTH)
+		return 0;
+
+	return depthBufferID;
+}
+
 bool FBO::Use() {
 	if (!isValid)
 		return false;
 
-	glBindTexture(GL_TEXTURE_2D, ID);
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 }
 
 void FBO::UseDefault() {

@@ -106,11 +106,16 @@ set(IMAGES
 	container2_specular.png
 	earth.jpg
 	matrix.jpg
+	marble.jpg
+	grass.png
+	window.png
+	wood.png
 )
 foreach(IMAGE ${IMAGES})
 	install(FILES "${CMAKE_SOURCE_DIR}/data/textures/${IMAGE}" DESTINATION data/textures)
 endforeach(IMAGE ${IMAGES})
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/objects/nanosuit" DESTINATION data/objects)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/textures/skybox" DESTINATION data/textures/skybox)
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")

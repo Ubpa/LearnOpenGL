@@ -7,7 +7,9 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-Texture::Texture() : ID(0), isValid(false) { }
+Texture::Texture(size_t ID) : ID(ID) {
+	isValid = ID != 0;
+}
 
 Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
 	Load(path, flip, gammaCorrection);

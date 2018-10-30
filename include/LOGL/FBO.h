@@ -8,7 +8,8 @@ namespace LOGL {
 		{
 			ENUM_TYPE_BASIC,
 			ENUM_TYPE_MSAA,
-			ENUM_TYPE_COLOR
+			ENUM_TYPE_COLOR,
+			ENUM_TYPE_DEPTH
 		};
 		enum ENUM_PASS_TYPE {
 			ENUM_PASS_COLOR
@@ -21,11 +22,13 @@ namespace LOGL {
 		static void UseDefault();
 		size_t GetID() const;
 		size_t GetColorBufferID() const;
+		size_t GetDepthBufferID() const;
 		bool IsValid() const;
 	private:
 		bool GenFBO_BASIC(size_t width, size_t height);
 		bool GenFBO_MSAA(size_t width, size_t height);
 		bool GenFBO_COLOR(size_t width, size_t height);
+		bool GenFBO_DEPTH(size_t width, size_t height);
 
 		bool IsComplete() const;
 
@@ -35,6 +38,7 @@ namespace LOGL {
 		ENUM_TYPE type;
 		size_t ID;
 		size_t colorBufferID;
+		size_t depthBufferID;
 		size_t width;
 		size_t height;
 		bool isValid;
