@@ -9,8 +9,8 @@ using namespace std;
 
 Texture::Texture() : ID(0), isValid(false) { }
 
-Texture::Texture(const std::string & path, bool flip){
-	Load(path, flip);
+Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
+	Load(path, flip, gammaCorrection);
 }
 
 Texture::Texture(const vector<string> & skybox) {
@@ -65,7 +65,7 @@ bool Texture::Load(const std::vector<std::string> & skybox) {
 	return true;
 }
 
-bool Texture::Load(const std::string & path, bool flip) {
+bool Texture::Load(const std::string & path, bool flip, bool gammaCorrection) {
 	if (isValid) {
 		printf("ERROR: The texture is valid already.\n");
 		return false;
@@ -78,14 +78,21 @@ bool Texture::Load(const std::string & path, bool flip) {
 		return false;
 	}
 
-	GLenum format;
+	GLenum internalFormat;
+	GLenum dataFormat;
 	int nrComponents = img.GetChannel();
-	if (nrComponents == 1)
-		format = GL_RED;
-	else if (nrComponents == 3)
-		format = GL_RGB;
-	else if (nrComponents == 4)
-		format = GL_RGBA;
+	if (nrComponents == 1) {
+		internalFormat = GL_RED;
+		dataFormat = GL_RED;
+	}
+	else if (nrComponents == 3) {
+		internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
+		dataFormat = GL_RGB;
+	}
+	else if (nrComponents == 4) {
+		internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
+		dataFormat = GL_RGBA;
+	}
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
@@ -101,7 +108,7 @@ bool Texture::Load(const std::string & path, bool flip) {
 	@8 源图类型
 	@9 图像数据
 	*/
-	glTexImage2D(GL_TEXTURE_2D, 0, format, img.GetWidth(), img.GetHeight(), 0, format, GL_UNSIGNED_BYTE, img.GetConstData());
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, img.GetWidth(), img.GetHeight(), 0, dataFormat, GL_UNSIGNED_BYTE, img.GetConstData());
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 

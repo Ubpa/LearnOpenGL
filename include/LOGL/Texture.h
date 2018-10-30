@@ -10,10 +10,10 @@ namespace LOGL {
 	public:
 		Texture();
 		Texture(const std::vector<std::string> & skybox);
-		Texture(const std::string & path, bool flip = false);
+		Texture(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
 		bool Load(const std::vector<std::string> & skybox);
-		bool Load(const std::string & path, bool flip = false);
+		bool Load(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
 		bool Use(size_t id = 0);
 

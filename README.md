@@ -48,6 +48,7 @@
   -08_Instance
 /05_AdvanceLighting
   -01_BlinnPhong
+  -02_Gamma
 /LIBs
   -glad
   /LOGL
@@ -72,16 +73,13 @@
 
 # 2. 使用方法
 
-### 2.1 下载数据文件
+## 2.1 下载代码
 
+```bash
+git clone https://github.com/Ubpa/LearnOpenGL
 ```
-链接：https://pan.baidu.com/s/1TQOqNW7gNLE8Uxhl34hLWg 
-提取码：ahmx
-```
 
-放在根目录下
-
-### 2.2 建立工程
+## 2.2 建立工程
 
 ```bash
 mkdir build
@@ -89,9 +87,5 @@ cd build
 cmake ..
 ```
 
-打开 `/build/LearnOpenGL.sln`，找到 `INSTALL` 项目，右键点击“生成”。
-
-- 生成的`exe`会在`/bin`中
-
-- `*.fs`、`*.vs`会从`/src`中拷贝到`/data`中（现已直接入库）
+打开 `/build/LearnOpenGL.sln`即可
 
