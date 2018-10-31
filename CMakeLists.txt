@@ -112,6 +112,9 @@ set(IMAGES
 	wood.png
 	brickwall.jpg
 	brickwall_normal.jpg
+	bricks2.jpg
+	bricks2_disp.jpg
+	bricks2_normal.jpg
 )
 foreach(IMAGE ${IMAGES})
 	install(FILES "${CMAKE_SOURCE_DIR}/data/textures/${IMAGE}" DESTINATION data/textures)
