@@ -1,6 +1,8 @@
 #include <LOGL/Model.h>
 #include <LOGL/Texture.h>
 
+#include <iostream>
+
 using namespace LOGL;
 using namespace std;
 

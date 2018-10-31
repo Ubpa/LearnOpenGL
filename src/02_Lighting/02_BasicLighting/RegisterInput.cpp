@@ -1,16 +1,19 @@
 #include "RegisterInput.h"
 
-#include "Defines.h"
-
-#include <Utility/GStorage.h>
+#include <LOGL/Camera.h>
 
 #include <GLFW/Glfw.h>
 #include <Utility/LambdaOp.h>
-#include <LOGL/Camera.h>
+#include <Utility/GStorage.h>
+
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <iostream>
+
+#include "Defines.h"
 
 using namespace Ubpa;
 using namespace LOGL;

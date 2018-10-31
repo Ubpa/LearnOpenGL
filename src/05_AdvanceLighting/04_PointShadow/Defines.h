@@ -24,6 +24,13 @@ namespace Define {
 	const std::string str_Shadow_vs = str_ShaderPrefix + str_Shadow + ".vs";
 	const std::string str_Shadow_fs = str_ShaderPrefix + str_Shadow + ".fs";
 
+
+	//------------ val
+	const size_t val_ShadowWidth = 1024;
+	const size_t val_ShadowHeight = 1024;
+	const float val_ShadowRatioWH = (float)val_ShadowWidth / (float)val_ShadowHeight;
+
+
 	//------------ data
 
 	const float data_ScreanVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.

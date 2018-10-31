@@ -1,18 +1,18 @@
 #include <GLFW/Glfw.h>
 
-#include <Utility/Image.h>
 #include <Utility/GStorage.h>
 #include <Utility/LambdaOp.h>
 #include <Utility/Config.h>
-#include <Utility/Sphere.h>
 #include <Utility/Cube.h>
 #include <Utility/OpNode.h>
 
 #include <LOGL/Camera.h>
 #include <LOGL/Texture.h>
-#include <LOGL/Model.h>
 #include <LOGL/VAO.h>
 #include <LOGL/FBO.h>
+#include <LOGL/Shader.h>
+
+#include <iostream>
 
 #include "Defines.h"
 #include "RegisterInput.h"

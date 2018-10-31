@@ -14,6 +14,8 @@
 #include <LOGL/Texture.h>
 #include <LOGL/Model.h>
 
+#include <iostream>
+
 #include "Defines.h"
 #include "RegisterInput.h"
 

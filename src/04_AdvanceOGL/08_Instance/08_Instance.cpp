@@ -16,6 +16,8 @@
 #include <LOGL/VAO.h>
 #include <LOGL/FBO.h>
 
+#include <iostream>
+
 #include "Defines.h"
 #include "RegisterInput.h"
 

@@ -15,6 +15,8 @@
 #include <LOGL/Model.h>
 #include <LOGL/VAO.h>
 
+#include <iostream>
+
 #include "Defines.h"
 #include "RegisterInput.h"
 

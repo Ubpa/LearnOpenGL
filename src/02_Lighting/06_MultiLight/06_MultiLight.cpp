@@ -13,6 +13,8 @@
 #include <LOGL/Camera.h>
 #include <LOGL/Texture.h>
 
+#include <iostream>
+
 #include "Defines.h"
 #include "RegisterInput.h"
 

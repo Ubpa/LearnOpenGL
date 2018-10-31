@@ -1,12 +1,18 @@
 #include <ROOT_PATH.h>
+
 #include <GLFW/Glfw.h>
+
 #include <LOGL/Shader.h>
+
 #include <Utility/Image.h>
 #include <Utility/GStorage.h>
 #include <Utility/InfoLambdaOp.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <iostream>
 
 using namespace LOGL;
 using namespace std;

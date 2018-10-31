@@ -1,18 +1,18 @@
 #include <GLFW/Glfw.h>
 
-#include <Utility/Image.h>
 #include <Utility/GStorage.h>
 #include <Utility/LambdaOp.h>
 #include <Utility/Config.h>
-#include <Utility/Sphere.h>
 #include <Utility/Cube.h>
 #include <Utility/OpNode.h>
 
 #include <LOGL/Camera.h>
 #include <LOGL/Texture.h>
-#include <LOGL/Model.h>
 #include <LOGL/VAO.h>
 #include <LOGL/FBO.h>
+#include <LOGL/Shader.h>
+
+#include <iostream>
 
 #include "Defines.h"
 #include "RegisterInput.h"
@@ -55,7 +55,7 @@ int main(int argc, char ** argv) {
 	string depth_gs = rootPath + str_Depth_gs;
 	Shader depthShader(depth_vs, depth_fs, depth_gs);
 	if (!depthShader.IsValid()) {
-		printf("depthShader load fail\n");
+		printf("ERROR: depthShader load fail\n");
 		return 1;
 	}
 	depthShader.SetFloat("far_plane", 25.0f);
@@ -65,7 +65,7 @@ int main(int argc, char ** argv) {
 	string shadow_fs = rootPath + str_Shadow_fs;
 	Shader shadowShader(shadow_vs, shadow_fs);
 	if (!shadowShader.IsValid()) {
-		printf("shadowShader load fail\n");
+		printf("ERROR: shadowShader load fail\n");
 		return 1;
 	}
 	shadowShader.SetInt("diffuseTexture", 0);
@@ -83,7 +83,7 @@ int main(int argc, char ** argv) {
 	bool flip[textureNum] = { false };
 	for (size_t i = 0; i < textureNum; i++) {
 		if (!textures[i].Load(imgPath[i], flip[i])) {
-			printf("Load texture [%s] fail.\n", imgPath[i].c_str());
+			printf("ERROR: Load texture [%s] fail.\n", imgPath[i].c_str());
 			return 1;
 		}
 	}
@@ -119,7 +119,7 @@ int main(int argc, char ** argv) {
 
 	
 	//------------ 深度缓冲
-	FBO FBO_DepthMap(1024, 1024, FBO::ENUM_TYPE_CUBE_DEPTH);
+	FBO FBO_DepthMap(val_ShadowWidth, val_ShadowHeight, FBO::ENUM_TYPE_CUBE_DEPTH);
 	Texture depthMap(FBO_DepthMap.GetDepthBufferID(), Texture::ENUM_TYPE_CUBE_MAP);
 
 
@@ -144,8 +144,8 @@ int main(int argc, char ** argv) {
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	});
 
-	// 更新灯光
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), val_RatioWH, 1.0f, 25.0f);
+	//------------ 更新灯光
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), val_ShadowRatioWH, 1.0f, 25.0f);
 	auto lightPosUpdate = new LambdaOp([&]() {
 		lightPos.z = sin(glfwGetTime() * 0.5f) * 3.0f;
 		shadowShader.SetVec3f("lightPos", lightPos);
@@ -218,7 +218,7 @@ int main(int argc, char ** argv) {
 	//------------ 渲染深度图
 	auto depthOp = new OpNode([&]() {//init
 		glEnable(GL_DEPTH_TEST);
-		glViewport(0, 0, 1024, 1024);
+		glViewport(0, 0, val_ShadowWidth, val_ShadowHeight);
 		FBO_DepthMap.Use();
 		glClear(GL_DEPTH_BUFFER_BIT);
 		curShader = &depthShader;
