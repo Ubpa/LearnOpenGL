@@ -1,0 +1,237 @@
+#include <GLFW/Glfw.h>
+
+#include <Utility/GStorage.h>
+#include <Utility/LambdaOp.h>
+#include <Utility/Config.h>
+#include <Utility/Cube.h>
+#include <Utility/OpNode.h>
+
+#include <LOGL/Camera.h>
+#include <LOGL/Texture.h>
+#include <LOGL/VAO.h>
+#include <LOGL/FBO.h>
+#include <LOGL/Shader.h>
+
+#include <iostream>
+
+#include "Defines.h"
+#include "RegisterInput.h"
+
+using namespace LOGL;
+using namespace std;
+using namespace Ubpa;
+using namespace Define;
+
+int main(int argc, char ** argv) {
+	Config * config = DoConfig();
+	string rootPath = *config->GetStrPtr(str_RootPath);
+	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
+	GStorage<string>::GetInstance()->Register(str_RootPath, rootPath);
+	
+	
+	//------------ 窗口
+	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, str_WindowTitle);
+	Glfw::GetInstance()->LockCursor();
+	
+
+	//------------ 模型 . 平面
+	// positions
+	glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
+	glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
+	glm::vec3 pos3(1.0f, -1.0f, 0.0f);
+	glm::vec3 pos4(1.0f, 1.0f, 0.0f);
+	// texture coordinates
+	glm::vec2 uv1(0.0f, 1.0f);
+	glm::vec2 uv2(0.0f, 0.0f);
+	glm::vec2 uv3(1.0f, 0.0f);
+	glm::vec2 uv4(1.0f, 1.0f);
+	// normal vector
+	glm::vec3 nm(0.0f, 0.0f, 1.0f);
+
+	// calculate tangent/bitangent vectors of both triangles
+	glm::vec3 tangent1, bitangent1;
+	glm::vec3 tangent2, bitangent2;
+	// triangle 1
+	// ----------
+	glm::vec3 edge1 = pos2 - pos1;
+	glm::vec3 edge2 = pos3 - pos1;
+	glm::vec2 deltaUV1 = uv2 - uv1;
+	glm::vec2 deltaUV2 = uv3 - uv1;
+
+	GLfloat f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+	tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+	tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+	tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+	tangent1 = glm::normalize(tangent1);
+
+	bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+	bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+	bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+	bitangent1 = glm::normalize(bitangent1);
+
+	// triangle 2
+	// ----------
+	edge1 = pos3 - pos1;
+	edge2 = pos4 - pos1;
+	deltaUV1 = uv3 - uv1;
+	deltaUV2 = uv4 - uv1;
+
+	f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+	tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+	tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+	tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+	tangent2 = glm::normalize(tangent2);
+
+	bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+	bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+	bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+	bitangent2 = glm::normalize(bitangent2);
+	
+	float quadVertices[] = {
+		// positions            // normal         // texcoords  // tangent                          // bitangent
+		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+		pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+
+		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+		pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
+	};
+	VAO VAO_Quad(&(quadVertices[0]), sizeof(quadVertices), { 3,3,2,3,3 });
+
+
+	//------------ 模型 . Cube
+	Cube cube;
+	vector<VAO::VBO_DataPatch> cube_Vec_VBO_Data_Patch = {
+		{cube.GetVertexArr(), cube.GetVertexArrSize(), 3},
+		{cube.GetNormalArr(), cube.GetNormalArrSize(), 3},
+		{cube.GetTexCoordsArr(), cube.GetTexCoordsArrSize(), 2},
+	};
+	VAO VAO_Cube(cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
+
+
+	//------------ Depth 着色器
+	string normalMap_vs = rootPath + str_NormalMap_vs;
+	string normalMap_fs = rootPath + str_NormalMap_fs;
+	Shader normalMapShader(normalMap_vs, normalMap_fs);
+	if (!normalMapShader.IsValid()) {
+		printf("ERROR: normalMapShader load fail\n");
+		return 1;
+	}
+	normalMapShader.UniformBlockBind("CameraMatrixs", 0);
+	normalMapShader.SetInt("diffuseMap", 0);
+	normalMapShader.SetInt("normalMap", 1);
+	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
+	normalMapShader.SetVec3f("lightPos", lightPos);
+
+	//------------ 纹理
+	const int textureNum = 2;
+	Texture textures[textureNum];
+	string imgPath[textureNum] = {
+		rootPath + str_Img_Brickwall,
+		rootPath + str_Img_BrickwallNormal,
+	};
+	bool flip[textureNum] = { true, true };
+	for (size_t i = 0; i < textureNum; i++) {
+		if (!textures[i].Load(imgPath[i], flip[i])) {
+			printf("ERROR: Load texture [%s] fail.\n", imgPath[i].c_str());
+			return 1;
+		}
+	}
+
+	//------------ 相机
+	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
+	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
+	Camera mainCamera(val_RatioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 3.0f));
+	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
+	
+	//------------ Camera Matrixs UBO
+	size_t cameraMatrixsUBO;
+	glGenBuffers(1, &cameraMatrixsUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraMatrixsUBO);
+	glBufferData(GL_UNIFORM_BUFFER, 2*sizeof(glm::mat4), NULL, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraMatrixsUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
+	//------------ 输入
+	auto registerInputOp = new RegisterInput(false);
+	 
+	//------------- 时间
+	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+	GStorage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
+	float lastFrame = 0.0f; // 上一帧的时间
+	auto timeUpdate = new LambdaOp([&]() {
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+	});
+
+	//------------ 更新相机
+	auto cameraMatrixsUBO_Update = new LambdaOp([&]() {
+		glBindBuffer(GL_UNIFORM_BUFFER, cameraMatrixsUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(mainCamera.GetViewMatrix()));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(mainCamera.GetProjectionMatrix()));
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	});
+
+	auto updateOpQueue = new OpQueue;
+	(*updateOpQueue) << timeUpdate << cameraMatrixsUBO_Update;
+
+
+	//------------ 模型场景
+	auto quadOp = new LambdaOp([&]() {
+		textures[0].Use(0);
+		textures[1].Use(1);
+
+		normalMapShader.SetVec3f("viewPos", mainCamera.GetPos());
+		glm::mat4 model(1.0f);
+		// rotate the quad to show normal mapping from multiple directions
+		model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+		normalMapShader.SetMat4f("model", model);
+		VAO_Quad.Use();
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	});
+
+	auto lightOp = new LambdaOp([&]() {
+		// render light source (simply re-renders a smaller plane at the light's position for debugging/visualization)
+		textures[0].Use(0);
+		glm::mat4 model(1.0f);
+
+		normalMapShader.SetVec3f("viewPos", mainCamera.GetPos());
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.1f));
+		normalMapShader.SetMat4f("model", model);
+		VAO_Quad.Use();
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	});
+
+	//------------ 渲染操作
+	auto renderOp = new OpNode([]() {//init
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}, []() {//end
+		glfwSwapBuffers(Glfw::GetInstance()->GetWindow());
+		glfwPollEvents();
+	});
+
+	(*renderOp) << quadOp << lightOp;
+	
+	//------------- 整合
+	auto opQueue = new OpQueue;
+	(*opQueue) << registerInputOp << updateOpQueue << renderOp;
+	
+	//------------
+	Glfw::GetInstance()->Run(opQueue);
+	
+	//------------
+	Glfw::GetInstance()->Terminate();
+	
+	return 0;
+}
+

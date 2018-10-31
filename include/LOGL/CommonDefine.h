@@ -14,24 +14,27 @@ namespace Define{
 	const float val_RatioWH = (float)val_windowWidth / (float)val_windowHeight;
 	const float PI = 3.1415926;
 	
-	const std::string str_Img_Container = "/data/textures/container.jpg";
-	const std::string str_Img_Container2 = "/data/textures/container2.png";
-	const std::string str_Img_Container2_Specular = "/data/textures/container2_specular.png";
-	const std::string str_Img_Matrix = "/data/textures/matrix.jpg";
-	const std::string str_Img_Face = "/data/textures/awesomeface.png";
-	const std::string str_Img_Earth = "/data/textures/earth.jpg";
-	const std::string str_Img_Marble = "/data/textures/marble.jpg";
-	const std::string str_Img_Grass = "/data/textures/grass.png";
-	const std::string str_Img_Window = "/data/textures/window.png";
-	const std::string str_Img_Wood = "/data/textures/wood.png";
+	const std::string str_Img_Prefix = "/data/textures/";
+	const std::string str_Img_Container = str_Img_Prefix + "container.jpg";
+	const std::string str_Img_Container2 = str_Img_Prefix + "container2.png";
+	const std::string str_Img_Container2_Specular = str_Img_Prefix + "container2_specular.png";
+	const std::string str_Img_Matrix = str_Img_Prefix + "matrix.jpg";
+	const std::string str_Img_Face = str_Img_Prefix + "awesomeface.png";
+	const std::string str_Img_Earth = str_Img_Prefix + "earth.jpg";
+	const std::string str_Img_Marble = str_Img_Prefix + "marble.jpg";
+	const std::string str_Img_Grass = str_Img_Prefix + "grass.png";
+	const std::string str_Img_Window = str_Img_Prefix + "window.png";
+	const std::string str_Img_Wood = str_Img_Prefix + "wood.png";
+	const std::string str_Img_Brickwall = str_Img_Prefix + "brickwall.jpg";
+	const std::string str_Img_BrickwallNormal = str_Img_Prefix + "brickwall_normal.jpg";
 	
 	const std::vector<std::string> str_Vec_Img_Skybox = {
-		"/data/textures/skybox/right.jpg",
-		"/data/textures/skybox/left.jpg",
-		"/data/textures/skybox/top.jpg",
-		"/data/textures/skybox/bottom.jpg",
-		"/data/textures/skybox/front.jpg",
-		"/data/textures/skybox/back.jpg"
+		str_Img_Prefix + "skybox/right.jpg",
+		str_Img_Prefix + "skybox/left.jpg",
+		str_Img_Prefix + "skybox/top.jpg",
+		str_Img_Prefix + "skybox/bottom.jpg",
+		str_Img_Prefix + "skybox/front.jpg",
+		str_Img_Prefix + "skybox/back.jpg"
 	};
 
 	const std::string str_Obj_Nanosuit = "/data/objects/nanosuit/nanosuit.obj";

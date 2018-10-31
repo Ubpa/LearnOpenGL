@@ -50,6 +50,8 @@
   -01_BlinnPhong
   -02_Gamma
   -03_ShadowMap
+  -04_PointShadow
+  -05_NormalMap
 /LIBs
   -glad
   /LOGL
