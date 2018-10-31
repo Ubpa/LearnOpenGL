@@ -3,14 +3,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Utility/EventManager.h>
-#include <iostream>
+#include <string>
 
 namespace LOGL {
 	class Glfw {
 	public:
 		static Glfw * GetInstance();
 		//------------
-		void Init(size_t width = 800, size_t height = 600, const char * title = "Title");
+		void Init(size_t width = 800, size_t height = 600, const std::string & title = "Title");
 		void Terminate();
 		void Run(Ubpa::Operation * op = NULL);
 		void Run(Ubpa::Ptr<Ubpa::Operation> & op);
@@ -25,7 +25,7 @@ namespace LOGL {
 		static Glfw * instance;
 		//------------
 		static void CB_FrameBuffSize(GLFWwindow* window, int width, int height);
-		void GenWindow(size_t width = 800, size_t height = 600, const char * title = NULL);
+		void GenWindow(size_t width = 800, size_t height = 600, const std::string & title = "title");
 		void LoadGL();
 		//------------
 		GLFWwindow * window;

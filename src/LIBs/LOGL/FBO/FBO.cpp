@@ -27,7 +27,12 @@ FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 		if (!GenFBO_DEPTH(width, height))
 			printf("GenFBO_DEPTH fail\n");
 		break;
+	case LOGL::FBO::ENUM_TYPE_CUBE_DEPTH:
+		if (!GenFBO_CUBE_DEPTH(width, height))
+			printf("GenFBO_CUBE_DEPTH fail\n");
+		break;
 	default:
+		printf("ERROR: FBO type not know\n");
 		isValid = false;
 		break;
 	}
@@ -59,7 +64,7 @@ bool FBO::GenFBO_BASIC(size_t width, size_t height) {
 }
 
 bool FBO::GenFBO_MSAA(size_t width, size_t height) {
-	const float samples = 4;
+	const size_t samples = 4;
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
@@ -131,6 +136,34 @@ bool FBO::GenFBO_DEPTH(size_t width, size_t height) {
 	return isValid;
 }
 
+bool FBO::GenFBO_CUBE_DEPTH(size_t width, size_t height) {
+	glGenFramebuffers(1, &ID);
+
+	glGenTextures(1, &depthBufferID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthBufferID);
+	for (GLuint i = 0; i < 6; ++i)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+			width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBufferID, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	isValid = IsComplete();
+	if (!isValid)
+		printf("Framebuffer is not complete!\n");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return isValid;
+}
+
+
 size_t FBO::GetID() const {
 	if (!isValid)
 		return 0;
@@ -184,7 +217,8 @@ size_t FBO::GetDepthBufferID() const {
 	if (!isValid)
 		return 0;
 
-	if (type != ENUM_TYPE_DEPTH)
+	if (type != ENUM_TYPE_DEPTH
+		&& type != ENUM_TYPE_CUBE_DEPTH)
 		return 0;
 
 	return depthBufferID;
@@ -195,6 +229,7 @@ bool FBO::Use() {
 		return false;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	return true;
 }
 
 void FBO::UseDefault() {

@@ -1,5 +1,6 @@
 #include <LOGL/Shader.h>
-#include <string>
+
+#include <iostream>
 
 using namespace std;
 using namespace LOGL;

@@ -9,7 +9,8 @@ namespace LOGL {
 			ENUM_TYPE_BASIC,
 			ENUM_TYPE_MSAA,
 			ENUM_TYPE_COLOR,
-			ENUM_TYPE_DEPTH
+			ENUM_TYPE_DEPTH,
+			ENUM_TYPE_CUBE_DEPTH,
 		};
 		enum ENUM_PASS_TYPE {
 			ENUM_PASS_COLOR
@@ -29,6 +30,7 @@ namespace LOGL {
 		bool GenFBO_MSAA(size_t width, size_t height);
 		bool GenFBO_COLOR(size_t width, size_t height);
 		bool GenFBO_DEPTH(size_t width, size_t height);
+		bool GenFBO_CUBE_DEPTH(size_t width, size_t height);
 
 		bool IsComplete() const;
 

@@ -7,9 +7,7 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-Texture::Texture(size_t ID) : ID(ID) {
-	isValid = ID != 0;
-}
+Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID), type(type) {}
 
 Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
 	Load(path, flip, gammaCorrection);
@@ -24,11 +22,11 @@ size_t Texture::GetID() const{
 }
 
 bool Texture::IsValid() const{
-	return isValid;
+	return ID != 0 && type != ENUM_TYPE_NOT_VALID;
 }
 
 bool Texture::Load(const std::vector<std::string> & skybox) {
-	if (isValid) {
+	if (IsValid()) {
 		printf("ERROR: The texture is valid already.\n");
 		return false;
 	}
@@ -45,13 +43,12 @@ bool Texture::Load(const std::vector<std::string> & skybox) {
 	// +Z (front) 
 	// -Z (back)
 	// -------------------------------------------------------
-	isValid = true;
 	for (size_t i = 0; i < skybox.size(); i++)
 	{
 		Image img(skybox[i].c_str());
 		if (!img.IsValid()) {
 			printf("Cubemap texture failed to load at path: %s\n", skybox[i].c_str());
-			isValid = false;
+			type = ENUM_TYPE_NOT_VALID;
 			return false;
 		}
 
@@ -64,19 +61,20 @@ bool Texture::Load(const std::vector<std::string> & skybox) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+	type = ENUM_TYPE_2D;
 	return true;
 }
 
 bool Texture::Load(const std::string & path, bool flip, bool gammaCorrection) {
-	if (isValid) {
+	if (IsValid()) {
 		printf("ERROR: The texture is valid already.\n");
 		return false;
 	}
 	
 	Image img(path.c_str(), flip);
-	isValid = img.IsValid();
-	if (isValid == false) {
-		printf("ERROR: Texture [%s] load failed\n", path);
+	if (!img.IsValid()) {
+		printf("ERROR: Texture [%s] load failed\n", path.c_str());
+		type = ENUM_TYPE_NOT_VALID;
 		return false;
 	}
 
@@ -119,14 +117,32 @@ bool Texture::Load(const std::string & path, bool flip, bool gammaCorrection) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	type = ENUM_TYPE_2D;
 	return true;
 }
 
 bool Texture::Use(size_t id) {
-	if (!isValid)
+	if (!IsValid())
 		return false;
 
 	glActiveTexture(GL_TEXTURE0 + id);
-	glBindTexture(GL_TEXTURE_2D, ID);
+	glBindTexture(Type2GL(type), ID);
 	return true;
+}
+
+size_t Texture::Type2GL(ENUM_TYPE type) {
+	switch (type)
+	{
+	case LOGL::Texture::ENUM_TYPE_NOT_VALID:
+		return 0;
+		break;
+	case LOGL::Texture::ENUM_TYPE_2D:
+		return GL_TEXTURE_2D;
+		break;
+	case LOGL::Texture::ENUM_TYPE_CUBE_MAP:
+		return GL_TEXTURE_CUBE_MAP;
+		break;
+	default:
+		break;
+	}
 }

@@ -8,7 +8,14 @@
 namespace LOGL {
 	class Texture {
 	public:
-		Texture(size_t ID = 0);
+		enum ENUM_TYPE
+		{
+			ENUM_TYPE_NOT_VALID,
+			ENUM_TYPE_2D,
+			ENUM_TYPE_CUBE_MAP,
+		};
+
+		Texture(size_t ID = 0, ENUM_TYPE type = ENUM_TYPE_NOT_VALID);
 		Texture(const std::vector<std::string> & skybox);
 		Texture(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
@@ -19,10 +26,12 @@ namespace LOGL {
 
 		size_t GetID() const;
 		bool IsValid() const;
+
 	private:
+		static size_t Type2GL(ENUM_TYPE type);
 
 		size_t ID;
-		bool isValid;
+		ENUM_TYPE type;
 	};
 }
 
