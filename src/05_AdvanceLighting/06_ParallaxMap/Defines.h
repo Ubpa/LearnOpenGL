@@ -9,7 +9,7 @@
 
 namespace Define {
 	const std::string str_Chapter = "05_AdvanceLighting";
-	const std::string str_Subchapter = "05_NormalMap";
+	const std::string str_Subchapter = "06_ParallaxMap";
 	const std::string str_WindowTitle = str_Chapter + "/" + str_Subchapter;
 
 	//------------ shader
@@ -17,9 +17,9 @@ namespace Define {
 	const std::string str_VsPostfix = ".vs";
 	const std::string str_FsPostfix = ".fs";
 
-	const std::string str_NormalMap = "normalMap";
-	const std::string str_NormalMap_vs = str_ShaderPrefix + str_NormalMap + str_VsPostfix;
-	const std::string str_NormalMap_fs = str_ShaderPrefix + str_NormalMap + str_FsPostfix;
+	const std::string str_ParallaxMap = "parallaxMap";
+	const std::string str_ParallaxMap_vs = str_ShaderPrefix + str_ParallaxMap + str_VsPostfix;
+	const std::string str_ParallaxMap_fs = str_ShaderPrefix + str_ParallaxMap + str_FsPostfix;
 
 	const std::string str_ImgShow = "imgShow";
 	const std::string str_ImgShow_vs = str_ShaderPrefix + str_ImgShow + str_VsPostfix;

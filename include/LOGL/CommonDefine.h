@@ -27,6 +27,10 @@ namespace Define{
 	const std::string str_Img_Wood = str_Img_Prefix + "wood.png";
 	const std::string str_Img_Brickwall = str_Img_Prefix + "brickwall.jpg";
 	const std::string str_Img_BrickwallNormal = str_Img_Prefix + "brickwall_normal.jpg";
+	const std::string str_Img_Bricks2 = str_Img_Prefix + "bricks2.jpg";
+	const std::string str_Img_Bricks2_disp = str_Img_Prefix + "bricks2_disp.jpg";
+	const std::string str_Img_Bricks2_normal = str_Img_Prefix + "bricks2_normal.jpg";
+
 	
 	const std::vector<std::string> str_Vec_Img_Skybox = {
 		str_Img_Prefix + "skybox/right.jpg",
@@ -47,7 +51,23 @@ namespace Define{
 	const std::string config_CameraMoveSpeed = "CameraMoveSpeed";
 	const std::string config_CameraRotateSensitivity = "CameraRotateSensitivity";
 
+	const std::string str_ShadersCommon_Prefix = "/data/shaders/Common/";
+	const std::string str_VsPostfix = ".vs";
+	const std::string str_FsPostfix = ".fs";
+
+	const std::string str_ImgShow = "imgShow";
+	const std::string str_ImgShow_vs = str_ShadersCommon_Prefix + str_ImgShow + str_VsPostfix;
+	const std::string str_ImgShow_fs = str_ShadersCommon_Prefix + str_ImgShow + str_FsPostfix;
+
+	const float data_ScreenVertices[] = {
+		// positions        // texture Coords
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	};
 	
+
 	//position, TexCoords
 	const float data_vertices[] = {
 		-0.5f, -0.5f, -0.5f, -0.5f, -0.5f,

@@ -16,14 +16,14 @@
 
 #include "Defines.h"
 #include "RegisterInput.h"
-
+ 
 using namespace LOGL;
-using namespace std;
+using namespace std; 
 using namespace Ubpa;
 using namespace Define;
 
 int main(int argc, char ** argv) {
-	Config * config = DoConfig();
+	Config * config = DoConfig(); 
 	string rootPath = *config->GetStrPtr(str_RootPath);
 	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
 	GStorage<string>::GetInstance()->Register(str_RootPath, rootPath);
@@ -119,19 +119,23 @@ int main(int argc, char ** argv) {
 	VAO VAO_ImgShowCube(imgShowCube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
 
 
-	//------------ Depth 着色器
-	string normalMap_vs = rootPath + str_NormalMap_vs;
-	string normalMap_fs = rootPath + str_NormalMap_fs;
-	Shader normalMapShader(normalMap_vs, normalMap_fs);
-	if (!normalMapShader.IsValid()) {
-		printf("ERROR: normalMapShader load fail\n");
+	//------------ ParallaxMap 着色器
+	string parallaxMap_vs = rootPath + str_ParallaxMap_vs;
+	string parallaxMap_fs = rootPath + str_ParallaxMap_fs;
+	Shader parallaxMapShader(parallaxMap_vs, parallaxMap_fs);
+	if (!parallaxMapShader.IsValid()) {
+		printf("ERROR: parallaxMapShader load fail\n"); 
 		return 1;
 	}
-	normalMapShader.UniformBlockBind("CameraMatrixs", 0);
-	normalMapShader.SetInt("diffuseMap", 0);
-	normalMapShader.SetInt("normalMap", 1);
+	parallaxMapShader.UniformBlockBind("CameraMatrixs", 0);
+	parallaxMapShader.SetInt("diffuseMap", 0);
+	parallaxMapShader.SetInt("normalMap", 1);
+	parallaxMapShader.SetInt("depthMap", 2);
 	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
-	normalMapShader.SetVec3f("lightPos", lightPos);
+	int mode = 0;
+	GStorage<int *>::GetInstance()->Register("mode", &mode);
+	parallaxMapShader.SetVec3f("lightPos", lightPos);
+	parallaxMapShader.SetFloat("heightScale", 0.1f);
 
 	//------------ ImgShow 着色器
 	string imgShow_vs = rootPath + str_ImgShow_vs;
@@ -139,19 +143,20 @@ int main(int argc, char ** argv) {
 	Shader imgShowShader(imgShow_vs, imgShow_fs);
 	if (!imgShowShader.IsValid()) {
 		printf("ERROR: imgShowShader load fail\n");
-		return 1;
+		return 1; 
 	}
 	imgShowShader.SetInt("texture0", 0);
 	imgShowShader.UniformBlockBind("CameraMatrixs", 0);
 
 	//------------ 纹理
-	const int textureNum = 2;
+	const int textureNum = 3;
 	Texture textures[textureNum];
 	string imgPath[textureNum] = {
-		rootPath + str_Img_Brickwall,
-		rootPath + str_Img_BrickwallNormal,
+		rootPath + str_Img_Bricks2,
+		rootPath + str_Img_Bricks2_normal,
+		rootPath + str_Img_Bricks2_disp,
 	};
-	bool flip[textureNum] = { true, true };
+	bool flip[textureNum] = { true, true, true };
 	for (size_t i = 0; i < textureNum; i++) {
 		if (!textures[i].Load(imgPath[i], flip[i])) {
 			printf("ERROR: Load texture [%s] fail.\n", imgPath[i].c_str());
@@ -203,15 +208,17 @@ int main(int argc, char ** argv) {
 	auto quadOp = new LambdaOp([&]() {
 		textures[0].Use(0);
 		textures[1].Use(1);
-
-		normalMapShader.SetVec3f("viewPos", mainCamera.GetPos());
+		textures[2].Use(2);
+		
+		parallaxMapShader.SetInt("mode", mode);
+		parallaxMapShader.SetVec3f("viewPos", mainCamera.GetPos());
 		glm::mat4 model(1.0f);
 		// rotate the quad to show normal mapping from multiple directions
 		model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-		normalMapShader.SetMat4f("model", model);
+		parallaxMapShader.SetMat4f("model", model);
 		VAO_Quad.Use();
+		parallaxMapShader.Use();
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
 	});
 
 	auto lightOp = new LambdaOp([&]() {
@@ -231,16 +238,12 @@ int main(int argc, char ** argv) {
 		model = glm::translate(model, lightPos);
 		
 		VAO_ImgShowCube.Use();
-
-		model = glm::translate(model, glm::vec3(2.0, 0, 0));
-		imgShowShader.SetMat4f("model", model);
-		textures[0].Use(0);
-		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
-
-		model = glm::translate(model, glm::vec3(2.0, 0, 0));
-		imgShowShader.SetMat4f("model", model);
-		textures[1].Use(0);
-		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+		for (size_t i = 0; i < textureNum; i++) {
+			model = glm::translate(model, glm::vec3(2.0, 0, 0));
+			imgShowShader.SetMat4f("model", model);
+			textures[i].Use();
+			glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+		}
 	});
 
 	//------------ 渲染操作

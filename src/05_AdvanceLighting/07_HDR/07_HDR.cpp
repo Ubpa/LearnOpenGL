@@ -16,14 +16,14 @@
 
 #include "Defines.h"
 #include "RegisterInput.h"
-
+ 
 using namespace LOGL;
-using namespace std;
+using namespace std; 
 using namespace Ubpa;
 using namespace Define;
 
 int main(int argc, char ** argv) {
-	Config * config = DoConfig();
+	Config * config = DoConfig(); 
 	string rootPath = *config->GetStrPtr(str_RootPath);
 	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
 	GStorage<string>::GetInstance()->Register(str_RootPath, rootPath);
@@ -119,19 +119,20 @@ int main(int argc, char ** argv) {
 	VAO VAO_ImgShowCube(imgShowCube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
 
 
-	//------------ Depth 着色器
-	string normalMap_vs = rootPath + str_NormalMap_vs;
-	string normalMap_fs = rootPath + str_NormalMap_fs;
-	Shader normalMapShader(normalMap_vs, normalMap_fs);
-	if (!normalMapShader.IsValid()) {
-		printf("ERROR: normalMapShader load fail\n");
+	//------------ 模型 . Screen
+	VAO VAO_Screen(&(data_ScreanVertices[0]), sizeof(data_ScreanVertices), { 3,2 });
+	
+	//------------ ParallaxMap 着色器
+	string HDR_vs = rootPath + str_HDR_vs;
+	string HDR_fs = rootPath + str_HDR_fs;
+	Shader HDRShader(HDR_vs, HDR_fs);
+	if (!HDRShader.IsValid()) {
+		printf("ERROR: HDRShader load fail\n"); 
 		return 1;
 	}
-	normalMapShader.UniformBlockBind("CameraMatrixs", 0);
-	normalMapShader.SetInt("diffuseMap", 0);
-	normalMapShader.SetInt("normalMap", 1);
+	HDRShader.UniformBlockBind("CameraMatrixs", 0);
+	HDRShader.SetInt("hdrBuffer", 0);
 	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
-	normalMapShader.SetVec3f("lightPos", lightPos);
 
 	//------------ ImgShow 着色器
 	string imgShow_vs = rootPath + str_ImgShow_vs;
@@ -139,19 +140,35 @@ int main(int argc, char ** argv) {
 	Shader imgShowShader(imgShow_vs, imgShow_fs);
 	if (!imgShowShader.IsValid()) {
 		printf("ERROR: imgShowShader load fail\n");
-		return 1;
+		return 1; 
 	}
 	imgShowShader.SetInt("texture0", 0);
 	imgShowShader.UniformBlockBind("CameraMatrixs", 0);
 
+	//------------ Lighting 着色器
+	string lighting_vs = rootPath + str_Lighting_vs;
+	string lighting_fs = rootPath + str_Lighting_fs;
+	Shader lightingShader(lighting_vs, lighting_fs);
+	if (!lightingShader.IsValid()) {
+		printf("ERROR: lightingShader load fail\n");
+		return 1;
+	}
+	lightingShader.SetInt("diffuseTexture", 0);
+	lightingShader.UniformBlockBind("CameraMatrixs", 0);
+	lightingShader.SetBool("inverse_normals", true);
+	const size_t lightNum = 4;
+	for (size_t i = 0; i < lightNum; i++) {
+		lightingShader.SetVec3f("lights[" + to_string(i) + "].Position", data_LightPositions[i]);
+		lightingShader.SetVec3f("lights[" + to_string(i) + "].Color", data_LightColors[i]);
+	}
+
 	//------------ 纹理
-	const int textureNum = 2;
+	const int textureNum = 1;
 	Texture textures[textureNum];
 	string imgPath[textureNum] = {
-		rootPath + str_Img_Brickwall,
-		rootPath + str_Img_BrickwallNormal,
+		rootPath + str_Img_Wood,
 	};
-	bool flip[textureNum] = { true, true };
+	bool flip[textureNum] = { true };
 	for (size_t i = 0; i < textureNum; i++) {
 		if (!textures[i].Load(imgPath[i], flip[i])) {
 			printf("ERROR: Load texture [%s] fail.\n", imgPath[i].c_str());
@@ -173,6 +190,10 @@ int main(int argc, char ** argv) {
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraMatrixsUBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+
+	//------------ HDR帧缓冲
+	FBO FBO_HDR(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_BASIC_FLOAT);
+	Texture hdrBuffer(FBO_HDR.GetColorBufferID());
 
 	//------------ 输入
 	auto registerInputOp = new RegisterInput(false);
@@ -200,29 +221,17 @@ int main(int argc, char ** argv) {
 
 
 	//------------ 模型场景
-	auto quadOp = new LambdaOp([&]() {
-		textures[0].Use(0);
-		textures[1].Use(1);
+	auto tunnelOp = new LambdaOp([&]() {
+		textures[0].Use();
+		
+		lightingShader.SetVec3f("viewPos", mainCamera.GetPos());
 
-		normalMapShader.SetVec3f("viewPos", mainCamera.GetPos());
+		// render tunnel
 		glm::mat4 model(1.0f);
-		// rotate the quad to show normal mapping from multiple directions
-		model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-		normalMapShader.SetMat4f("model", model);
-		VAO_Quad.Use();
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	});
-
-	auto lightOp = new LambdaOp([&]() {
-		// render light source (simply re-renders a smaller plane at the light's position for debugging/visualization)
-		textures[0].Use(0);
-
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.1f));
-		imgShowShader.SetMat4f("model", model);
-		VAO_ImgShowCube.Use();
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 55.0f));
+		lightingShader.SetMat4f("model", model);
+		VAO_Cube.Use();
 		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 	});
 
@@ -231,19 +240,29 @@ int main(int argc, char ** argv) {
 		model = glm::translate(model, lightPos);
 		
 		VAO_ImgShowCube.Use();
+		for (size_t i = 0; i < textureNum; i++) {
+			model = glm::translate(model, glm::vec3(2.0, 0, 0));
+			imgShowShader.SetMat4f("model", model);
+			textures[i].Use();
+			glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+		}
+	});
 
-		model = glm::translate(model, glm::vec3(2.0, 0, 0));
-		imgShowShader.SetMat4f("model", model);
-		textures[0].Use(0);
-		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
-
-		model = glm::translate(model, glm::vec3(2.0, 0, 0));
-		imgShowShader.SetMat4f("model", model);
-		textures[1].Use(0);
-		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+	auto screenOp = new LambdaOp([&]() {
+		hdrBuffer.Use();
+		VAO_Screen.Use();
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 	});
 
 	//------------ 渲染操作
+	auto hdrOp = new OpNode([&]() {
+		FBO_HDR.Use();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}, []() {
+		FBO::UseDefault();
+	});
+	(*hdrOp) << tunnelOp << imgShowOp;
+
 	auto renderOp = new OpNode([]() {//init
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -253,11 +272,11 @@ int main(int argc, char ** argv) {
 		glfwPollEvents();
 	});
 
-	(*renderOp) << quadOp << lightOp << imgShowOp;
+	(*renderOp) << screenOp;
 	
 	//------------- 整合
 	auto opQueue = new OpQueue;
-	(*opQueue) << registerInputOp << updateOpQueue << renderOp;
+	(*opQueue) << registerInputOp << updateOpQueue << hdrOp << renderOp;
 	
 	//------------
 	Glfw::GetInstance()->Run(opQueue);

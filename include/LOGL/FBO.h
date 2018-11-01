@@ -7,6 +7,7 @@ namespace LOGL {
 		enum ENUM_TYPE
 		{
 			ENUM_TYPE_BASIC,
+			ENUM_TYPE_BASIC_FLOAT,
 			ENUM_TYPE_MSAA,
 			ENUM_TYPE_COLOR,
 			ENUM_TYPE_DEPTH,
@@ -27,6 +28,7 @@ namespace LOGL {
 		bool IsValid() const;
 	private:
 		bool GenFBO_BASIC(size_t width, size_t height);
+		bool GenFBO_BASIC_FLOAT(size_t width, size_t height);
 		bool GenFBO_MSAA(size_t width, size_t height);
 		bool GenFBO_COLOR(size_t width, size_t height);
 		bool GenFBO_DEPTH(size_t width, size_t height);
