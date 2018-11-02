@@ -1,15 +1,20 @@
 #ifndef _FBO_H_
 #define _FBO_H_
 
+#include <vector>
+
 namespace LOGL {
 	class FBO {
 	public:
 		enum ENUM_TYPE
 		{
 			ENUM_TYPE_BASIC,
-			ENUM_TYPE_BASIC_FLOAT,
+			ENUM_TYPE_RGBF1_DEPTH,
+			ENUM_TYPE_RGBF2_DEPTH,
+			ENUM_TYPE_RGBF3_DEPTH,
 			ENUM_TYPE_MSAA,
 			ENUM_TYPE_COLOR,
+			ENUM_TYPE_COLOR_FLOAT,
 			ENUM_TYPE_DEPTH,
 			ENUM_TYPE_CUBE_DEPTH,
 		};
@@ -23,14 +28,14 @@ namespace LOGL {
 		bool Use();
 		static void UseDefault();
 		size_t GetID() const;
-		size_t GetColorBufferID() const;
+		size_t GetColorBufferID(size_t idx = 0) const;
 		size_t GetDepthBufferID() const;
 		bool IsValid() const;
 	private:
 		bool GenFBO_BASIC(size_t width, size_t height);
-		bool GenFBO_BASIC_FLOAT(size_t width, size_t height);
+		bool GenFBO_RGBF_DEPTH(size_t width, size_t height, size_t colorBufferNum = 1);
 		bool GenFBO_MSAA(size_t width, size_t height);
-		bool GenFBO_COLOR(size_t width, size_t height);
+		bool GenFBO_COLOR(size_t width, size_t height, bool isFloat = false);
 		bool GenFBO_DEPTH(size_t width, size_t height);
 		bool GenFBO_CUBE_DEPTH(size_t width, size_t height);
 
@@ -41,7 +46,7 @@ namespace LOGL {
 
 		ENUM_TYPE type;
 		size_t ID;
-		size_t colorBufferID;
+		std::vector<size_t> colorBufferIDs;
 		size_t depthBufferID;
 		size_t width;
 		size_t height;

@@ -8,23 +8,27 @@ using namespace std;
 
 FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 	: type(type), width(width), height(height) {
-	colorBufferID = 0;
 	switch (type)
 	{
 	case LOGL::FBO::ENUM_TYPE_BASIC:
 		if (!GenFBO_BASIC(width, height))
 			printf("GenFBO_BASIC fail\n");
 		break;
-	case LOGL::FBO::ENUM_TYPE_BASIC_FLOAT:
-		if (!GenFBO_BASIC_FLOAT(width, height))
-			printf("GenFBO_BASIC_FLOAT fail\n");
+	case LOGL::FBO::ENUM_TYPE_RGBF1_DEPTH:
+	case LOGL::FBO::ENUM_TYPE_RGBF2_DEPTH:
+	case LOGL::FBO::ENUM_TYPE_RGBF3_DEPTH:
+		const int colorBufferNum = type - ENUM_TYPE_RGBF1_DEPTH + 1;
+		if (!GenFBO_RGBF_DEPTH(width, height, colorBufferNum))
+			printf("GenFBO_RGBF_DEPTH fail\n");
 		break;
 	case LOGL::FBO::ENUM_TYPE_MSAA:
 		if (!GenFBO_MSAA(width, height))
 			printf("GenFBO_MSAA fail\n");
 		break;
 	case LOGL::FBO::ENUM_TYPE_COLOR:
-		if (!GenFBO_COLOR(width, height))
+	case LOGL::FBO::ENUM_TYPE_COLOR_FLOAT:
+		const bool isFloat = type == ENUM_TYPE_COLOR_FLOAT;
+		if (!GenFBO_COLOR(width, height, isFloat))
 			printf("GenFBO_COLOR fail\n");
 		break;
 	case LOGL::FBO::ENUM_TYPE_DEPTH:
@@ -46,12 +50,14 @@ bool FBO::GenFBO_BASIC(size_t width, size_t height) {
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
+	size_t colorBufferID;
 	glGenTextures(1, &colorBufferID);
 	glBindTexture(GL_TEXTURE_2D, colorBufferID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);
+	colorBufferIDs.push_back(colorBufferID);
 
 	size_t RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -60,23 +66,29 @@ bool FBO::GenFBO_BASIC(size_t width, size_t height) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
 	isValid = IsComplete();
-	if (!isValid)
+	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
+		colorBufferIDs.clear();
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return isValid;
 }
 
-bool FBO::GenFBO_BASIC_FLOAT(size_t width, size_t height) {
+bool FBO::GenFBO_RGBF_DEPTH(size_t width, size_t height, size_t colorBufferNum) {
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
-	glGenTextures(1, &colorBufferID);
-	glBindTexture(GL_TEXTURE_2D, colorBufferID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);
+	for (size_t i = 0; i < colorBufferNum; i++) {
+		size_t colorBufferID;
+		glGenTextures(1, &colorBufferID);
+		glBindTexture(GL_TEXTURE_2D, colorBufferID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBufferID, 0);
+		colorBufferIDs.push_back(colorBufferID);
+	}
 
 	size_t RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -85,8 +97,10 @@ bool FBO::GenFBO_BASIC_FLOAT(size_t width, size_t height) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
 	isValid = IsComplete();
-	if (!isValid)
+	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
+		colorBufferIDs.clear();
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return isValid;
@@ -97,12 +111,14 @@ bool FBO::GenFBO_MSAA(size_t width, size_t height) {
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 
+	size_t colorBufferID;
 	glGenTextures(1, &colorBufferID);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorBufferID);
 	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorBufferID, 0);
+	colorBufferIDs.push_back(colorBufferID);
 
 	size_t RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -113,27 +129,33 @@ bool FBO::GenFBO_MSAA(size_t width, size_t height) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
 	isValid = IsComplete();
-	if (!isValid)
+	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
+		colorBufferIDs.clear();
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return isValid;
 }
 
-bool FBO::GenFBO_COLOR(size_t width, size_t height) {
+bool FBO::GenFBO_COLOR(size_t width, size_t height, bool isFloat) {
 	glGenFramebuffers(1, &ID);
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 	// create a color attachment texture
+	size_t colorBufferID;
 	glGenTextures(1, &colorBufferID);
 	glBindTexture(GL_TEXTURE_2D, colorBufferID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, isFloat ? GL_RGB16F : GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);	// we only need a color buffer
+	colorBufferIDs.push_back(colorBufferID);
 
 	isValid = IsComplete();
-	if (!isValid)
+	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
+		colorBufferIDs.clear();
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return isValid;
@@ -229,17 +251,17 @@ bool FBO::PassTo(const FBO & fbo, ENUM_PASS_TYPE passType) const {
 	return true;
 }
 
-size_t FBO::GetColorBufferID() const {
-	if (!isValid)
+size_t FBO::GetColorBufferID(size_t idx) const {
+	if (!isValid || idx > colorBufferIDs.size())
 		return 0;
 
 	if (type != ENUM_TYPE_BASIC
 		&& type != ENUM_TYPE_MSAA
 		&& type != ENUM_TYPE_COLOR
-		&& type != ENUM_TYPE_BASIC_FLOAT)
+		&& type != ENUM_TYPE_RGBF1_DEPTH)
 		return 0;
 	
-	return colorBufferID;
+	return colorBufferIDs[idx];
 }
 
 size_t FBO::GetDepthBufferID() const {

@@ -107,7 +107,7 @@ void RegisterInput::RegisterKey() {
 		if (*pMode != 0) {
 			auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
 			*pExposure *= 1.15f;
-			printf("INFO: Set Exposure %.1f\n", *pExposure);
+			printf("INFO: Set Exposure %.3f\n", *pExposure);
 		}
 	});
 }

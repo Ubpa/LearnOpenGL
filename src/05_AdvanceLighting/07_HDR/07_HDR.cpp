@@ -127,7 +127,7 @@ int main(int argc, char ** argv) {
 
 
 	//------------ HDR÷°ª∫≥Â
-	FBO FBO_HDR(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_BASIC_FLOAT);
+	FBO FBO_HDR(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_RGBF1_DEPTH);
 	Texture hdrBuffer(FBO_HDR.GetColorBufferID());
 
 	//------------  ‰»Î
@@ -175,7 +175,7 @@ int main(int argc, char ** argv) {
 		
 		VAO_ImgShowCube.Use();
 		for (size_t i = 0; i < textureNum; i++) {
-			model = glm::translate(model, glm::vec3(2.0, 0, 0));
+			model = glm::translate(model, glm::vec3(1.99f, 0, 0));
 			imgShowShader.SetMat4f("model", model);
 			textures[i].Use();
 			glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);

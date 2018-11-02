@@ -43,7 +43,7 @@ namespace Define {
 	const glm::vec3 data_LightColors[] = {
 		glm::vec3(200.0f, 200.0f, 200.0f),
 		glm::vec3(0.4f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.4f),
+		glm::vec3(0.0f, 0.0f, 0.6f),
 		glm::vec3(0.0f, 0.4f, 0.0f)
 	};
 
