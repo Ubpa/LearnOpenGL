@@ -7,7 +7,9 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
-Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID), type(type) {}
+Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID){
+	this->type = ID == 0 ? Texture::ENUM_TYPE_NOT_VALID : type;
+}
 
 Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
 	Load(path, flip, gammaCorrection);
@@ -62,6 +64,7 @@ bool Texture::Load(const std::vector<std::string> & skybox) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	type = ENUM_TYPE_2D;
+	UnBind();
 	return true;
 }
 
@@ -118,6 +121,7 @@ bool Texture::Load(const std::string & path, bool flip, bool gammaCorrection) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	type = ENUM_TYPE_2D;
+	UnBind();
 	return true;
 }
 
@@ -145,4 +149,11 @@ size_t Texture::Type2GL(ENUM_TYPE type) {
 	default:
 		break;
 	}
+}
+
+void Texture::UnBind() {
+	if (!IsValid())
+		return;
+	
+	glBindTexture(Type2GL(type), 0);
 }

@@ -33,17 +33,6 @@ namespace Define {
 
 	//------------ data
 
-	const float data_ScreanVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
-	};
-
 	const glm::vec3 data_LightPositions[] = {
 		glm::vec3(0.0f, 0.0f, 49.5f),
 		glm::vec3(-1.4f, -1.9f, 9.0f),
@@ -53,9 +42,9 @@ namespace Define {
 
 	const glm::vec3 data_LightColors[] = {
 		glm::vec3(200.0f, 200.0f, 200.0f),
-		glm::vec3(0.1f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.2f),
-		glm::vec3(0.0f, 0.1f, 0.0f)
+		glm::vec3(0.4f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.4f),
+		glm::vec3(0.0f, 0.4f, 0.0f)
 	};
 
 	const float data_PlaneVertices[] = {

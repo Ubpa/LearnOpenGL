@@ -15,7 +15,7 @@ namespace LOGL {
 			ENUM_TYPE_CUBE_MAP,
 		};
 
-		Texture(size_t ID = 0, ENUM_TYPE type = ENUM_TYPE_NOT_VALID);
+		Texture(size_t ID = 0, ENUM_TYPE type = ENUM_TYPE_2D);
 		Texture(const std::vector<std::string> & skybox);
 		Texture(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
@@ -23,6 +23,7 @@ namespace LOGL {
 		bool Load(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
 		bool Use(size_t id = 0);
+		void UnBind();
 
 		size_t GetID() const;
 		bool IsValid() const;

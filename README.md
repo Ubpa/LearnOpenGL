@@ -52,6 +52,8 @@
   -03_ShadowMap
   -04_PointShadow
   -05_NormalMap
+  -06_ParallaxMap
+  -07_HDR
 /LIBs
   -glad
   /LOGL

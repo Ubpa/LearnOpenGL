@@ -13,6 +13,7 @@ struct Light {
 };
 
 uniform Light lights[16];
+uniform int lightNum;
 uniform sampler2D diffuseTexture;
 uniform vec3 viewPos;
 
@@ -24,7 +25,7 @@ void main()
     vec3 ambient = 0.0 * color;
     // lighting
     vec3 lighting = vec3(0.0);
-    for(int i = 0; i < 16; i++)
+    for(int i = 0; i < lightNum; i++)
     {
         // diffuse
         vec3 lightDir = normalize(lights[i].Position - fs_in.FragPos);
@@ -33,7 +34,7 @@ void main()
         vec3 result = diffuse;        
         // attenuation (use quadratic as we have gamma correction)
         float distance = length(fs_in.FragPos - lights[i].Position);
-        result *= 1.0 / (distance * distance);
+        result *= 1.0 / distance;//(distance * distance);
         lighting += result;
                 
     }

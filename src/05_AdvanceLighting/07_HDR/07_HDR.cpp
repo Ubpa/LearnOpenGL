@@ -32,74 +32,6 @@ int main(int argc, char ** argv) {
 	//------------ 窗口
 	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, str_WindowTitle);
 	Glfw::GetInstance()->LockCursor();
-	
-
-	//------------ 模型 . 平面
-	// positions
-	glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
-	glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
-	glm::vec3 pos3(1.0f, -1.0f, 0.0f);
-	glm::vec3 pos4(1.0f, 1.0f, 0.0f);
-	// texture coordinates
-	glm::vec2 uv1(0.0f, 1.0f);
-	glm::vec2 uv2(0.0f, 0.0f);
-	glm::vec2 uv3(1.0f, 0.0f);
-	glm::vec2 uv4(1.0f, 1.0f);
-	// normal vector
-	glm::vec3 nm(0.0f, 0.0f, 1.0f);
-
-	// calculate tangent/bitangent vectors of both triangles
-	glm::vec3 tangent1, bitangent1;
-	glm::vec3 tangent2, bitangent2;
-	// triangle 1
-	// ----------
-	glm::vec3 edge1 = pos2 - pos1;
-	glm::vec3 edge2 = pos3 - pos1;
-	glm::vec2 deltaUV1 = uv2 - uv1;
-	glm::vec2 deltaUV2 = uv3 - uv1;
-
-	GLfloat f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-	tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-	tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-	tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-	tangent1 = glm::normalize(tangent1);
-
-	bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-	bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-	bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	bitangent1 = glm::normalize(bitangent1);
-
-	// triangle 2
-	// ----------
-	edge1 = pos3 - pos1;
-	edge2 = pos4 - pos1;
-	deltaUV1 = uv3 - uv1;
-	deltaUV2 = uv4 - uv1;
-
-	f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-	tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-	tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-	tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-	tangent2 = glm::normalize(tangent2);
-
-	bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-	bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-	bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	bitangent2 = glm::normalize(bitangent2);
-	
-	float quadVertices[] = {
-		// positions            // normal         // texcoords  // tangent                          // bitangent
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
-	};
-	VAO VAO_Quad(&(quadVertices[0]), sizeof(quadVertices), { 3,3,2,3,3 });
 
 
 	//------------ 模型 . Cube
@@ -120,7 +52,7 @@ int main(int argc, char ** argv) {
 
 
 	//------------ 模型 . Screen
-	VAO VAO_Screen(&(data_ScreanVertices[0]), sizeof(data_ScreanVertices), { 3,2 });
+	VAO VAO_Screen(&(data_ScreenVertices[0]), sizeof(data_ScreenVertices), { 2,2 });
 	
 	//------------ ParallaxMap 着色器
 	string HDR_vs = rootPath + str_HDR_vs;
@@ -130,9 +62,11 @@ int main(int argc, char ** argv) {
 		printf("ERROR: HDRShader load fail\n"); 
 		return 1;
 	}
-	HDRShader.UniformBlockBind("CameraMatrixs", 0);
 	HDRShader.SetInt("hdrBuffer", 0);
-	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
+	int mode = 0;
+	float exposure = 1.0;
+	GStorage<int *>::GetInstance()->Register("int_ptr_mode", &mode);
+	GStorage<float *>::GetInstance()->Register("float_ptr_exposure", &exposure);
 
 	//------------ ImgShow 着色器
 	string imgShow_vs = rootPath + str_ImgShow_vs;
@@ -161,6 +95,7 @@ int main(int argc, char ** argv) {
 		lightingShader.SetVec3f("lights[" + to_string(i) + "].Position", data_LightPositions[i]);
 		lightingShader.SetVec3f("lights[" + to_string(i) + "].Color", data_LightColors[i]);
 	}
+	lightingShader.SetInt("lightNum", lightNum);
 
 	//------------ 纹理
 	const int textureNum = 1;
@@ -179,7 +114,7 @@ int main(int argc, char ** argv) {
 	//------------ 相机
 	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
 	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
-	Camera mainCamera(val_RatioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 3.0f));
+	Camera mainCamera(val_RatioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, -2.49f), 0.1f, 100.0f, glm::vec3(0, 1.0f, 0.0f), 90.0f,-10.0f);
 	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	
 	//------------ Camera Matrixs UBO
@@ -228,7 +163,7 @@ int main(int argc, char ** argv) {
 
 		// render tunnel
 		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 55.0f));
 		lightingShader.SetMat4f("model", model);
 		VAO_Cube.Use();
@@ -237,7 +172,6 @@ int main(int argc, char ** argv) {
 
 	auto imgShowOp = new LambdaOp([&]() {
 		glm::mat4 model(1.0f);
-		model = glm::translate(model, lightPos);
 		
 		VAO_ImgShowCube.Use();
 		for (size_t i = 0; i < textureNum; i++) {
@@ -249,14 +183,19 @@ int main(int argc, char ** argv) {
 	});
 
 	auto screenOp = new LambdaOp([&]() {
-		hdrBuffer.Use();
 		VAO_Screen.Use();
+		hdrBuffer.Use(); 
+		HDRShader.Use();
+		HDRShader.SetInt("mode", mode);
+		HDRShader.SetFloat("exposure", exposure);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	});
 
 	//------------ 渲染操作
 	auto hdrOp = new OpNode([&]() {
 		FBO_HDR.Use();
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}, []() {
 		FBO::UseDefault();

@@ -59,12 +59,15 @@ namespace Define{
 	const std::string str_ImgShow_vs = str_ShadersCommon_Prefix + str_ImgShow + str_VsPostfix;
 	const std::string str_ImgShow_fs = str_ShadersCommon_Prefix + str_ImgShow + str_FsPostfix;
 
-	const float data_ScreenVertices[] = {
-		// positions        // texture Coords
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	const float data_ScreenVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 	
 

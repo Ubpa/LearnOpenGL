@@ -85,13 +85,31 @@ void RegisterInput::RegisterKey() {
 			op);
 	}
 	
-	for (size_t i = 0; i < 4; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | (GLFW_KEY_0 + i), [=]() {
-			auto pMode = *GStorage<int *>::GetInstance()->GetPtr("mode");
+			auto pMode = *GStorage<int *>::GetInstance()->GetPtr("int_ptr_mode");
 			*pMode = i;
 			printf("INFO: Set Mode %d\n", *pMode);
 		});
 	}
+
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_N, [=]() {
+		auto pMode = *GStorage<int *>::GetInstance()->GetPtr("int_ptr_mode");
+		if (*pMode != 0) {
+			auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
+			*pExposure *= 0.85f;
+			printf("INFO: Set Exposure %.1f\n", *pExposure);
+		}
+	});
+
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_M, [=]() {
+		auto pMode = *GStorage<int *>::GetInstance()->GetPtr("int_ptr_mode");
+		if (*pMode != 0) {
+			auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
+			*pExposure *= 1.15f;
+			printf("INFO: Set Exposure %.1f\n", *pExposure);
+		}
+	});
 }
 
 void RegisterInput::PrintInfo() {
@@ -100,7 +118,8 @@ void RegisterInput::PrintInfo() {
 		<< "* 2. Press 'I' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press 'O' to set Projection[perspective]" << endl
 		<< "* 4. Press 'P' to set Projection[ortho]" << endl
-		<< "* 5. Press [0123] to switch depthMap Mode" << endl
-		<< "* 6. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
-		<< "* 7. Press 'ESC' to close exe" << endl << endl;
+		<< "* 5. Press [012] to switch hdr Mode" << endl
+		<< "* 6. Press [NM] to -/+ exposure" << endl
+		<< "* 7. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
+		<< "* 8. Press 'ESC' to close exe" << endl << endl;
 }
