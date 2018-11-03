@@ -14,6 +14,7 @@
 #include <LOGL/Model.h>
 
 #include <iostream>
+#include <random>
 
 #include "Defines.h"
 #include "RegisterInput.h"
@@ -23,13 +24,15 @@ using namespace std;
 using namespace Ubpa;
 using namespace Define;
 
+float lerp(float a, float b, float f){ return a + f * (b - a); }
+
 int main(int argc, char ** argv) {
 	Config * config = DoConfig(); 
 	string rootPath = *config->GetStrPtr(str_RootPath);
 	GStorage<Config *>::GetInstance()->Register(str_MainConfig, config);
 	GStorage<string>::GetInstance()->Register(str_RootPath, rootPath);
 	
-	
+	 
 	//------------ 窗口
 	Glfw::GetInstance()->Init(val_windowWidth, val_windowHeight, str_WindowTitle);
 	Glfw::GetInstance()->LockCursor();
@@ -82,6 +85,14 @@ int main(int argc, char ** argv) {
 		}
 	}
 
+
+	//------------ 相机
+	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
+	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
+	Camera mainCamera(val_RatioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 5.0f));
+	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
+
+
 	//------------ GBuffer Shader
 	string gBuffer_vs = rootPath + str_GBuffer_vs;
 	string gBuffer_fs = rootPath + str_GBuffer_fs;
@@ -91,6 +102,59 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 	gBufferShader.UniformBlockBind("CameraMatrixs", 0);
+
+
+	//------------ SSAO Shader
+	string SSAO_vs = rootPath + str_SSAO_vs;
+	string SSAO_fs = rootPath + str_SSAO_fs;
+	Shader SSAOShader(SSAO_vs, SSAO_fs);
+	if (!SSAOShader.IsValid()) {
+		printf("ERROR: SSAOShader load fail\n");
+		return 1;
+	}
+	SSAOShader.SetInt("gPosition", 0);
+	SSAOShader.SetInt("gNormal", 1);
+	SSAOShader.SetInt("texNoise", 2);
+	bool ssaoEnable = true;
+	GStorage<bool *>::GetInstance()->Register("bool_ptr_ssaoEnable", &ssaoEnable);
+	// generate sample kernel
+	// ----------------------
+	uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
+	default_random_engine generator;
+	vector<glm::vec3> ssaoKernel;
+	for (size_t i = 0; i < 64; ++i){
+		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		float scale = float(i) / 64.0;
+
+		// scale samples s.t. they're more aligned to center of kernel
+		scale = lerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+	}
+	for (size_t i = 0; i < 64; ++i)
+		SSAOShader.SetVec3f("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+
+	// generate noise texture
+	// ----------------------
+	vector<glm::vec3> ssaoNoise;
+	for (size_t i = 0; i < 16; i++){
+		glm::vec3 noise(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
+		ssaoNoise.push_back(noise);
+	}
+	Texture noiseTexture(4, 4, &(ssaoNoise[0][0]), GL_FLOAT, GL_RGB, GL_RGB32F);
+
+
+	//------------ Blur Shader
+	string blur_vs = rootPath + str_Blur_vs;
+	string blur_fs = rootPath + str_Blur_fs;
+	Shader blurShader(blur_vs, blur_fs);
+	if (!blurShader.IsValid()) {
+		printf("ERROR: blurShader load fail\n");
+		return 1;
+	}
+	blurShader.SetInt("SSAO", 0);
 
 
 	//------------ DeferedShading Shader
@@ -104,52 +168,17 @@ int main(int argc, char ** argv) {
 	deferedShadingShader.SetInt("gPosition", 0);
 	deferedShadingShader.SetInt("gNormal", 1);
 	deferedShadingShader.SetInt("gAlbedoSpec", 2);
-	deferedShadingShader.SetInt("albedo", 3);
-	const unsigned int NR_LIGHTS = 32;
-	std::vector<glm::vec3> lightPositions;
-	std::vector<glm::vec3> lightColors;
-	srand(13);
-	for (size_t i = 0; i < NR_LIGHTS; i++){
-		// calculate slightly random offsets
-		float xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
-		float yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
-		float zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
-		lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
-		// also calculate random color
-		float rColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-		float gColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-		float bColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
-		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
-	}
-	//const float constant = 1.0; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-	const float linear = 0.7;
-	const float quadratic = 1.8;
-	for (size_t i = 0; i < lightPositions.size(); i++)
-	{
-		deferedShadingShader.SetVec3f("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
-		deferedShadingShader.SetVec3f("lights[" + std::to_string(i) + "].Color", lightColors[i]);
-		// update attenuation parameters and calculate radius
-		
-		deferedShadingShader.SetFloat("lights[" + std::to_string(i) + "].Linear", linear);
-		deferedShadingShader.SetFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
-	}
+	deferedShadingShader.SetInt("SSAO", 3);
+	const glm::vec3 lightPos = glm::vec3(2.0, 4.0, -2.0);
+	const glm::vec3 lightColor = glm::vec3(0.2, 0.2, 0.7);
+	deferedShadingShader.SetVec3f("light.Color", lightColor);
+	// Update attenuation parameters
+	const float constant = 1.0; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+	const float linear = 0.09;
+	const float quadratic = 0.032;
+	deferedShadingShader.SetFloat("light.Linear", linear);
+	deferedShadingShader.SetFloat("light.Quadratic", quadratic);
 
-	//------------ LightBox Shader
-	string lightBox_vs = rootPath + str_LightBox_vs;
-	string lightBox_fs = rootPath + str_LightBox_fs;
-	Shader lightBoxShader(lightBox_vs, lightBox_fs);
-	if (!lightBoxShader.IsValid()) {
-		printf("ERROR: lightBoxShader load fail\n");
-		return 1;
-	}
-	lightBoxShader.UniformBlockBind("CameraMatrixs", 0);
-
-
-	//------------ 相机
-	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
-	float rotateSpeed = *config->GetFloatPtr(config_CameraRotateSensitivity);
-	Camera mainCamera(val_RatioWH, moveSpeed, rotateSpeed, glm::vec3(0.0f, 0.0f, 5.0f));
-	GStorage<Camera *>::GetInstance()->Register(str_MainCamera.c_str(), &mainCamera);
 	
 
 	//------------ Camera Matrixs UBO
@@ -163,6 +192,15 @@ int main(int argc, char ** argv) {
 
 	//------------ GBuffer
 	FBO FBO_GBuffer(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_GBUFFER);
+
+
+	//------------ SSAO FBO
+	FBO FBO_SSAO(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_RED);
+
+
+	//------------ Blur FBO
+	FBO FBO_Blur(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_RED);
+
 
 	//------------ 操作
 
@@ -193,14 +231,22 @@ int main(int argc, char ** argv) {
 	(*updateOpQueue) << timeUpdate << cameraMatrixsUBO_Update;
 
 	auto nanosuitOp = Operation::ToPtr(new LambdaOp([&]() { 
-		for (size_t i = 0; i < val_NanosuitNum; i++) 
-		{
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, data_NanosuitPositions[i]);
-			model = glm::scale(model, glm::vec3(0.25f));
-			gBufferShader.SetMat4f("model", model);
-			nanosuit.Draw(gBufferShader);
-		}
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
+		model = glm::scale(model, glm::vec3(0.5f));
+		gBufferShader.SetMat4f("model", model);
+		gBufferShader.SetBool("invertedNormals", false);
+		nanosuit.Draw(gBufferShader);
+	})); 
+
+	auto roomOp = Operation::ToPtr(new LambdaOp([&]() {
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, glm::vec3(0.0, 7.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+		gBufferShader.SetMat4f("model", model);
+		gBufferShader.SetBool("invertedNormals", true); // invert normals as we're inside the cube
+		VAO_P3N3T2_Cube.Draw();
 	}));
 
 	auto gBufferOp = new OpNode([&]() {
@@ -208,27 +254,46 @@ int main(int argc, char ** argv) {
 		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	});
-	(*gBufferOp) << nanosuitOp;
+	(*gBufferOp) << roomOp << nanosuitOp;
 	
-	auto deferedShadingOp = Operation::ToPtr(new LambdaOp([&]() {
-		deferedShadingShader.SetVec3f("viewPos", mainCamera.GetPos());
+	auto ssaoOp = Operation::ToPtr(new LambdaOp([&]() {
+		FBO_SSAO.Use();
+		glClearColor(0, 0, 0, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		SSAOShader.SetMat4f("projection", mainCamera.GetProjectionMatrix());
 		FBO_GBuffer.GetColorTexture(0).Use(0);// position
 		FBO_GBuffer.GetColorTexture(1).Use(1);// normal
-		FBO_GBuffer.GetColorTexture(2).Use(2);// albedo_spec
-		textures[1].Use(3);
+		noiseTexture.Use(2);
 		VAO_Screen.Draw();
 	}));
 
-	auto lightBoxOp = Operation::ToPtr(new LambdaOp([&]() {
-		FBO_GBuffer.PassTo(FBO::DefaultBuffer, val_windowWidth, val_windowHeight, FBO::ENUM_PASS_TYPE::ENUM_PASS_DEPTH);
-		for (size_t i = 0; i < lightPositions.size(); i++) {
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, lightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.25f));
-			lightBoxShader.SetMat4f("model", model);
-			lightBoxShader.SetVec3f("color", lightColors[i]);
-			VAO_P3_Cube.Draw();
-		}
+	auto blurOp = Operation::ToPtr(new LambdaOp([&]() {
+		FBO_Blur.Use();
+		glClearColor(0, 0, 0, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		FBO_SSAO.GetColorTexture().Use();
+		blurShader.Use();
+		VAO_Screen.Draw();
+	}));
+
+	auto geometryQueue = new OpQueue;
+	(*geometryQueue) << gBufferOp << ssaoOp << blurOp;
+
+	auto deferedShadingOp = Operation::ToPtr(new LambdaOp([&]() {
+		deferedShadingShader.SetVec3f("viewPos", mainCamera.GetPos());
+		// send light relevant uniforms
+		glm::vec3 lightPosView = glm::vec3(mainCamera.GetViewMatrix() * glm::vec4(lightPos, 1.0));
+		deferedShadingShader.SetVec3f("light.Position", lightPosView);
+		deferedShadingShader.SetBool("ssaoEnable", ssaoEnable);
+
+		FBO_GBuffer.GetColorTexture(0).Use(0);// position
+		FBO_GBuffer.GetColorTexture(1).Use(1);// normal
+		FBO_GBuffer.GetColorTexture(2).Use(2);// albedo_spec
+		FBO_Blur.GetColorTexture().Use(3);
+
+		VAO_Screen.Draw();
 	}));
 	 
 	auto defaultBufferOp = new OpNode([]() {//init
@@ -241,10 +306,10 @@ int main(int argc, char ** argv) {
 		glfwPollEvents();
 	});
 
-	(*defaultBufferOp) << deferedShadingOp << lightBoxOp;
+	(*defaultBufferOp) << deferedShadingOp;
 
 	auto renderQueue = new OpQueue;
-	(*renderQueue) << gBufferOp << defaultBufferOp;
+	(*renderQueue) << geometryQueue << defaultBufferOp;
 	
 	// 帧操作
 

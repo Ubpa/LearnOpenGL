@@ -15,6 +15,7 @@ namespace LOGL {
 			ENUM_TYPE_RGBF3_DEPTH,
 			ENUM_TYPE_MSAA,
 			ENUM_TYPE_COLOR,
+			ENUM_TYPE_RED,
 			ENUM_TYPE_COLOR_FLOAT,
 			ENUM_TYPE_DEPTH,
 			ENUM_TYPE_CUBE_DEPTH,
@@ -42,6 +43,7 @@ namespace LOGL {
 		bool GenFBO_RGBF_DEPTH(size_t width, size_t height, size_t colorBufferNum = 1);
 		bool GenFBO_MSAA(size_t width, size_t height);
 		bool GenFBO_COLOR(size_t width, size_t height, bool isFloat = false);
+		bool GenFBO_RED(size_t width, size_t height);
 		bool GenFBO_DEPTH(size_t width, size_t height);
 		bool GenFBO_CUBE_DEPTH(size_t width, size_t height);
 		bool GenFBO_GBUFFER(size_t width, size_t height);

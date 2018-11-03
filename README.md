@@ -54,6 +54,9 @@
   -05_NormalMap
   -06_ParallaxMap
   -07_HDR
+  -08_Bloom
+  -09_DeferedShading
+  -10_SSAO
 /LIBs
   -glad
   /LOGL

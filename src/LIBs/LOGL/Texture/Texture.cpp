@@ -13,6 +13,17 @@ Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID){
 	this->type = ID == 0 ? Texture::ENUM_TYPE_NOT_VALID : type;
 }
 
+Texture::Texture(size_t width, size_t height, float const * data, size_t dataType, size_t srcFormat, size_t internalFormat) {
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, srcFormat, dataType, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	type = Texture::ENUM_TYPE_2D;
+}
+
 Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
 	type = ENUM_TYPE_NOT_VALID;
 	Load(path, flip, gammaCorrection);

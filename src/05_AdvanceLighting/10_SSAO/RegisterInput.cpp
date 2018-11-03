@@ -84,6 +84,14 @@ void RegisterInput::RegisterKey() {
 		EventManager::GetInstance()->Register(EventManager::KEYBOARD | arrowKey[i],
 			op);
 	}
+
+	// switch
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_SPACE,
+		[]() {
+		auto pSSAO_Enable = *GStorage<bool *>::GetInstance()->GetPtr("bool_ptr_ssaoEnable");
+		*pSSAO_Enable = !*pSSAO_Enable;
+		printf("INFO: Set SSAO %s\n", *pSSAO_Enable ? "Enable" : "Disable");
+	});
 }
 
 void RegisterInput::PrintInfo() {
@@ -92,6 +100,7 @@ void RegisterInput::PrintInfo() {
 		<< "* 2. Press 'I' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press 'O' to set Projection[perspective]" << endl
 		<< "* 4. Press 'P' to set Projection[ortho]" << endl
-		<< "* 5. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
-		<< "* 6. Press 'ESC' to close exe" << endl << endl;
+		<< "* 5. Press 'Space' to Switch SSAO" << endl
+		<< "* 6. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
+		<< "* 7. Press 'ESC' to close exe" << endl << endl;
 }

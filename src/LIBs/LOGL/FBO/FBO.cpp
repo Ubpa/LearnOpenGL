@@ -35,6 +35,11 @@ FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 			printf("GenFBO_COLOR fail\n");
 		break;
 	}
+	case LOGL::FBO::ENUM_TYPE_RED:
+		if (!GenFBO_RED(width, height))
+			printf("GenFBO_RED fail\n");
+		break;
+		break;
 	case LOGL::FBO::ENUM_TYPE_DEPTH:
 		if (!GenFBO_DEPTH(width, height))
 			printf("GenFBO_DEPTH fail\n");
@@ -185,6 +190,30 @@ bool FBO::GenFBO_COLOR(size_t width, size_t height, bool isFloat) {
 	return true;
 }
 
+bool FBO::GenFBO_RED(size_t width, size_t height) {
+	glGenFramebuffers(1, &ID);
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	// create a color attachment texture
+	size_t colorBufferID;
+	glGenTextures(1, &colorBufferID);
+	glBindTexture(GL_TEXTURE_2D, colorBufferID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);	// we only need a color buffer
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	isValid = IsComplete();
+	if (!isValid) {
+		printf("Framebuffer is not complete!\n");
+		return false;
+	}
+
+	colorTextures.push_back(Texture(colorBufferID));
+	return true;
+}
+
 bool FBO::GenFBO_DEPTH(size_t width, size_t height) {
 	glGenFramebuffers(1, &ID);
 	// create depth texture
@@ -260,6 +289,8 @@ bool FBO::GenFBO_GBUFFER(size_t width, size_t height) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
 	// normal color buffer
@@ -371,6 +402,7 @@ const Texture & FBO::GetColorTexture(size_t idx) const {
 	if (type != ENUM_TYPE_BASIC
 		&& type != ENUM_TYPE_MSAA
 		&& type != ENUM_TYPE_COLOR
+		&& type != ENUM_TYPE_RED
 		&& type != ENUM_TYPE_COLOR_FLOAT
 		&& type != ENUM_TYPE_RGBF1_DEPTH
 		&& type != ENUM_TYPE_RGBF2_DEPTH

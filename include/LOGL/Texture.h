@@ -16,6 +16,7 @@ namespace LOGL {
 		};
 
 		Texture(size_t ID = 0, ENUM_TYPE type = ENUM_TYPE_2D);
+		Texture(size_t width, size_t height, float const * data, size_t dataType, size_t srcFormat, size_t internalFormat);
 		Texture(const std::vector<std::string> & skybox);
 		Texture(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
