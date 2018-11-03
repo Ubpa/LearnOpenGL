@@ -22,12 +22,13 @@ namespace LOGL {
 		bool Load(const std::vector<std::string> & skybox);
 		bool Load(const std::string & path, bool flip = false, bool gammaCorrection = false);
 
-		bool Use(size_t id = 0);
-		void UnBind();
+		bool Use(size_t id = 0) const;
+		void UnBind() const;
 
 		size_t GetID() const;
 		bool IsValid() const;
 
+		static const Texture InValid;
 	private:
 		static size_t Type2GL(ENUM_TYPE type);
 

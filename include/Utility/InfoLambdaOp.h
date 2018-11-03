@@ -16,8 +16,8 @@ namespace Ubpa{
 		virtual ~InfoLambdaOp();
 		T info;
 	private:
-		InfoLambdaOp(const InfoLambdaOp&) = default;
-		InfoLambdaOp& operator=(const InfoLambdaOp&) = default;
+		InfoLambdaOp(const InfoLambdaOp&) = delete;
+		InfoLambdaOp& operator=(const InfoLambdaOp&) = delete;
 	};
 
 	//------------

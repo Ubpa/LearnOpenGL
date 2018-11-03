@@ -7,6 +7,8 @@ using namespace LOGL;
 using namespace Ubpa;
 using namespace std;
 
+const Texture Texture::InValid(0, Texture::ENUM_TYPE_NOT_VALID);
+
 Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID){
 	this->type = ID == 0 ? Texture::ENUM_TYPE_NOT_VALID : type;
 }
@@ -125,12 +127,13 @@ bool Texture::Load(const std::string & path, bool flip, bool gammaCorrection) {
 	return true;
 }
 
-bool Texture::Use(size_t id) {
+bool Texture::Use(size_t id) const{
 	if (!IsValid())
 		return false;
 
 	glActiveTexture(GL_TEXTURE0 + id);
 	glBindTexture(Type2GL(type), ID);
+	//printf("Use texture[ID:%u]\n", ID);
 	return true;
 }
 
@@ -151,7 +154,7 @@ size_t Texture::Type2GL(ENUM_TYPE type) {
 	}
 }
 
-void Texture::UnBind() {
+void Texture::UnBind() const{
 	if (!IsValid())
 		return;
 	

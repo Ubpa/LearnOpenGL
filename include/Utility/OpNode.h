@@ -24,8 +24,8 @@ namespace Ubpa {
 		Ptr<Operation> preOp;
 		Ptr<Operation> postOp;
 	private:
-		OpNode(const OpNode &) = default;
-		OpNode& operator=(const OpNode &) = default;
+		OpNode(const OpNode &) = delete;
+		OpNode& operator=(const OpNode &) = delete;
 	};
 };
 #endif // !_OPNODE_H_

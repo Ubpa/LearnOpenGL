@@ -2,6 +2,7 @@
 #define _FBO_H_
 
 #include <vector>
+#include <LOGL/Texture.h>
 
 namespace LOGL {
 	class FBO {
@@ -28,8 +29,8 @@ namespace LOGL {
 		bool Use();
 		static void UseDefault();
 		size_t GetID() const;
-		size_t GetColorBufferID(size_t idx = 0) const;
-		size_t GetDepthBufferID() const;
+		const Texture & GetColorTexture(size_t idx = 0) const;
+		const Texture & GetDepthTexture() const;
 		bool IsValid() const;
 	private:
 		bool GenFBO_BASIC(size_t width, size_t height);
@@ -41,13 +42,12 @@ namespace LOGL {
 
 		bool IsComplete() const;
 
-		FBO(const FBO & fbo) = delete;
 		FBO & operator=(const FBO & fbo) = delete;
 
 		ENUM_TYPE type;
 		size_t ID;
-		std::vector<size_t> colorBufferIDs;
-		size_t depthBufferID;
+		std::vector<Texture> colorTextures;
+		Texture depthTexture;
 		size_t width;
 		size_t height;
 		bool isValid;

@@ -21,11 +21,14 @@ namespace LOGL {
 		size_t GetAttrNum() const;
 		bool IsValid() const;
 		bool Use() const;
+		bool Draw() const;
 	private:
 		bool GenBindEBO(size_t const * index, size_t indexSize);
 		//------------
 		size_t attrNum;
 		size_t ID;
+		size_t pointNum;
+		bool hasIndex;
 		bool isValid;
 	};
 }

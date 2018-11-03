@@ -21,8 +21,8 @@ namespace Ubpa {
 		//------------
 		std::list< Ptr<Operation> > opList;
 	private:
-		OpQueue(const OpQueue &) = default;
-		OpQueue& operator=(const OpQueue &) = default;
+		OpQueue(const OpQueue &) = delete;
+		OpQueue& operator=(const OpQueue &) = delete;
 	};
 }
 

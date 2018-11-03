@@ -15,8 +15,8 @@ namespace Ubpa {
 		virtual ~LambdaOp();
 		std::function<void()> op;
 	private:
-		LambdaOp(const LambdaOp&) = default;
-		LambdaOp& operator=(const LambdaOp&) = default;
+		LambdaOp(const LambdaOp&) = delete;
+		LambdaOp& operator=(const LambdaOp&) = delete;
 	};
 }
 #endif // !_LAMBDA_OP_H_

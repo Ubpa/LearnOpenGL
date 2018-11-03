@@ -13,7 +13,6 @@ namespace Ubpa{
 		static Ptr<T> ToPtr(T * op) {
 			return Ptr<T>(op, ProtectDelete);
 		}
-		Operation(bool isHold = true);
 		//------------
 		bool IsHold();
 		void SetIsHold(bool isHold);
@@ -21,13 +20,15 @@ namespace Ubpa{
 		//------------
 		virtual void Run() = 0;
 	protected:
+		Operation(bool isHold = true);
+		//------------
 		static void ProtectDelete(Operation * op);
 		virtual ~Operation();
 		//------------
 		bool isHold;
 	private:
-		Operation(const Operation&) = default;
-		Operation& operator=(const Operation&) = default;
+		Operation(const Operation&) = delete;
+		Operation& operator=(const Operation&) = delete;
 	};
 };
 #endif//! _FILE_H_

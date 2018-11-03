@@ -16,7 +16,7 @@
 
 #include "Defines.h"
 #include "RegisterInput.h"
- 
+
 using namespace LOGL;
 using namespace std; 
 using namespace Ubpa;
@@ -128,7 +128,6 @@ int main(int argc, char ** argv) {
 
 	//------------ HDR÷°ª∫≥Â
 	FBO FBO_HDR(val_windowWidth, val_windowHeight, FBO::ENUM_TYPE_RGBF1_DEPTH);
-	Texture hdrBuffer(FBO_HDR.GetColorBufferID());
 
 	//------------  ‰»Î
 	auto registerInputOp = new RegisterInput(false);
@@ -166,29 +165,26 @@ int main(int argc, char ** argv) {
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
 		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 55.0f));
 		lightingShader.SetMat4f("model", model);
-		VAO_Cube.Use();
-		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+		VAO_Cube.Draw();
 	});
 
 	auto imgShowOp = new LambdaOp([&]() {
 		glm::mat4 model(1.0f);
 		
-		VAO_ImgShowCube.Use();
 		for (size_t i = 0; i < textureNum; i++) {
 			model = glm::translate(model, glm::vec3(1.99f, 0, 0));
 			imgShowShader.SetMat4f("model", model);
 			textures[i].Use();
-			glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
+			VAO_ImgShowCube.Draw();
 		}
 	});
 
 	auto screenOp = new LambdaOp([&]() {
-		VAO_Screen.Use();
-		hdrBuffer.Use(); 
+		FBO_HDR.GetColorTexture().Use();
 		HDRShader.Use();
 		HDRShader.SetInt("mode", mode);
 		HDRShader.SetFloat("exposure", exposure);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		VAO_Screen.Draw();
 	});
 
 	//------------ ‰÷»æ≤Ÿ◊˜

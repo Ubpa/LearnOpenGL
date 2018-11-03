@@ -94,21 +94,21 @@ void RegisterInput::RegisterKey() {
 	}
 
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_N, [=]() {
-		auto pMode = *GStorage<int *>::GetInstance()->GetPtr("int_ptr_mode");
-		if (*pMode != 0) {
-			auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
-			*pExposure *= 0.85f;
-			printf("INFO: Set Exposure %.3f\n", *pExposure);
-		}
+		auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
+		*pExposure *= 0.85f;
+		printf("INFO: Set Exposure %.3f\n", *pExposure);
 	});
 
 	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_M, [=]() {
-		auto pMode = *GStorage<int *>::GetInstance()->GetPtr("int_ptr_mode");
-		if (*pMode != 0) {
-			auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
-			*pExposure *= 1.15f;
-			printf("INFO: Set Exposure %.3f\n", *pExposure);
-		}
+		auto pExposure = *GStorage<float *>::GetInstance()->GetPtr("float_ptr_exposure");
+		*pExposure *= 1.15f;
+		printf("INFO: Set Exposure %.3f\n", *pExposure);
+	});
+
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_SPACE, [=]() {
+		auto pBloomEnable = *GStorage<bool *>::GetInstance()->GetPtr("bool_ptr_bloomEnable");
+		*pBloomEnable = !*pBloomEnable;
+		printf("INFO: Set Bloom %s\n", *pBloomEnable ? "Enable" : "Disable");
 	});
 }
 
@@ -118,7 +118,7 @@ void RegisterInput::PrintInfo() {
 		<< "* 2. Press 'I' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press 'O' to set Projection[perspective]" << endl
 		<< "* 4. Press 'P' to set Projection[ortho]" << endl
-		<< "* 5. Press [012] to switch hdr Mode" << endl
+		<< "* 5. Press 'Space' to switch bloom" << endl
 		<< "* 6. Press [NM] to -/+ exposure" << endl
 		<< "* 7. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
 		<< "* 8. Press 'ESC' to close exe" << endl << endl;

@@ -51,13 +51,20 @@ namespace Define{
 	const std::string config_CameraMoveSpeed = "CameraMoveSpeed";
 	const std::string config_CameraRotateSensitivity = "CameraRotateSensitivity";
 
+	//------------ common shader
 	const std::string str_ShadersCommon_Prefix = "/data/shaders/Common/";
 	const std::string str_VsPostfix = ".vs";
 	const std::string str_FsPostfix = ".fs";
 
-	const std::string str_ImgShow = "imgShow";
-	const std::string str_ImgShow_vs = str_ShadersCommon_Prefix + str_ImgShow + str_VsPostfix;
-	const std::string str_ImgShow_fs = str_ShadersCommon_Prefix + str_ImgShow + str_FsPostfix;
+	const std::string str_Basic_P3N3T2_vs = str_ShadersCommon_Prefix + "basic_P3N3T2" + str_VsPostfix;
+	const std::string str_Basic_P3T2_vs = str_ShadersCommon_Prefix + "basic_P3T2" + str_VsPostfix;
+	const std::string str_Basic_P2T2_vs = str_ShadersCommon_Prefix + "basic_P2T2" + str_VsPostfix;
+	const std::string str_Basic_P3_vs = str_ShadersCommon_Prefix + "basic_P3" + str_VsPostfix;
+
+	const std::string str_Basic_T2_fs = str_ShadersCommon_Prefix + "basic_T2" + str_FsPostfix;
+
+	const std::string str_ImgShow_vs = str_Basic_P3T2_vs;
+	const std::string str_ImgShow_fs = str_ShadersCommon_Prefix + "basic_T2" + str_FsPostfix;
 
 	const float data_ScreenVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
 		// positions   // texCoords
