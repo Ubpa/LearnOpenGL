@@ -10,12 +10,14 @@
 
 这是我对 LearnOpenGL 所做的练习
 
-内容基于教程，代码为自行编写，主要目标如下
+内容基于教程，代码大量重构与更改
+
+主要目标如下
 
 - 熟悉OpenGL
 - 提高C++编程技巧
-- 锻炼CMake搭工程能力
-- 完善泛用的 Utility 代码
+- 锻炼 CMake 搭工程能力
+- 编写好用的 Utility 部分的代码
 
 ## 1.3 工程结构
 
@@ -81,19 +83,35 @@
 
 # 2. 使用方法
 
-## 2.1 下载代码
+## 2.1 需求软件
+
+- Visual Studio 2017（其他版本没有测试）
+- Git
+- CMake
+
+## 2.2 下载代码
 
 ```bash
 git clone https://github.com/Ubpa/LearnOpenGL
 ```
 
-## 2.2 建立工程
+## 2.3 编译
+
+1. 建立工程
 
 ```bash
+# 在 cmd 中运行如下命令
 mkdir build
 cd build
 cmake ..
 ```
 
-打开 `/build/LearnOpenGL.sln`即可
+2. 打开 `/build/LearnOpenGL.sln`
 
+3. 在**解决方案中**的`CMakePredefinedTargets`中，右键`INSTALL`，点击生成
+
+## 2.4 运行
+
+双击根目录下的`run_all.bat`，即可运行所有`exe`
+
+> 按`ESC`可退出`exe`

@@ -14,7 +14,7 @@ namespace Ubpa{
 		}
 	private:
 		GStorage() = default;
-		virtual ~GStorage() = default;
+		~GStorage() = default;
 	};
 }
 

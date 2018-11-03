@@ -4,12 +4,8 @@
 
 using namespace Ubpa;
 
-EventManager::EventManager() {}
-
-EventManager * EventManager::instance = new EventManager();
-
 EventManager * EventManager::GetInstance() {
-	return instance;
+	return Singleton<EventManager>::GetInstance();
 }
 
 //------------

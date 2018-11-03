@@ -32,11 +32,6 @@ namespace Define {
 	const std::string str_Blend_vs = str_Basic_P2T2_vs;
 	const std::string str_Blend_fs = str_ShaderPrefix + str_Blend + str_FsPostfix;
 
-	//------------ val
-	const size_t val_ShadowWidth = 1024;
-	const size_t val_ShadowHeight = 1024;
-	const float val_ShadowRatioWH = (float)val_ShadowWidth / (float)val_ShadowHeight;
-
 
 	//------------ data
 

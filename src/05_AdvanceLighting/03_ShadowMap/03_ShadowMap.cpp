@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
 	
 	//------------ …Ó∂»ª∫≥Â
 	FBO FBO_DepthMap(1024, 1024, FBO::ENUM_TYPE_DEPTH);
-	Texture depthMap(FBO_DepthMap.GetDepthBufferID());
+	Texture depthMap(FBO_DepthMap.GetDepthTexture().GetID());
 
 
 	//------------  ‰»Î

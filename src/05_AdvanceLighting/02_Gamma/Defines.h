@@ -22,17 +22,6 @@ namespace Define {
 
 	//------------ data
 
-	const float data_ScreanVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
-	};
-
 	const glm::vec3 data_LightPositions[] = {
 		glm::vec3(-3.0f, 0.0f, 0.0f),
 		glm::vec3(-1.0f, 0.0f, 0.0f),

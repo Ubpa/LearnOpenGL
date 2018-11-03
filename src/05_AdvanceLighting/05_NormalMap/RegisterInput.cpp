@@ -84,13 +84,13 @@ void RegisterInput::RegisterKey() {
 		EventManager::GetInstance()->Register(EventManager::KEYBOARD | arrowKey[i],
 			op);
 	}
-	/*
-	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_G, [=]() {
-		auto pGammaEnable = *GStorage<bool *>::GetInstance()->GetPtr(str_GammaEnable);
-		*pGammaEnable = !*pGammaEnable;
-		printf("INFO: Switch to %s\n", *pGammaEnable ? "Gamma Enable" : "Gamma Disable");
+	
+	EventManager::GetInstance()->Register(EventManager::KEYBOARD_PRESS | GLFW_KEY_SPACE, [=]() {
+		auto pNormalMapEnable = *GStorage<bool *>::GetInstance()->GetPtr("bool_ptr_normalMapEnable");
+		*pNormalMapEnable = !*pNormalMapEnable;
+		printf("INFO: Set NormalMap %s\n", *pNormalMapEnable ? "Enable" : "Disable");
 	});
-	*/
+	
 }
 
 void RegisterInput::PrintInfo() {
@@ -99,7 +99,7 @@ void RegisterInput::PrintInfo() {
 		<< "* 2. Press 'I' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press 'O' to set Projection[perspective]" << endl
 		<< "* 4. Press 'P' to set Projection[ortho]" << endl
-		//<< "* 5. Press 'G' to switch Gamma Correction mode" << endl
-		<< "* 5. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
-		<< "* 6. Press 'ESC' to close exe" << endl << endl;
+		<< "* 5. Press 'Space' to switch NormalMap" << endl
+		<< "* 6. Key [WSADQE] and [left,right,up,down,pageup,pagedown] to control the position."
+		<< "* 7. Press 'ESC' to close exe" << endl << endl;
 }

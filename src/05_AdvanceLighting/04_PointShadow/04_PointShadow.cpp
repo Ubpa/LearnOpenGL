@@ -35,9 +35,6 @@ int main(int argc, char ** argv) {
 
 	glm::vec3 lightPos(0, 0, 0);
 
-	//------------ 模型 . 平面
-	VAO VAO_Panel(&(data_PlaneVertices[0]), sizeof(data_PlaneVertices), { 3,3,2 });
-
 
 	//------------ 模型 . Cube
 	Cube cube;
@@ -120,7 +117,7 @@ int main(int argc, char ** argv) {
 	
 	//------------ 深度缓冲
 	FBO FBO_DepthMap(val_ShadowWidth, val_ShadowHeight, FBO::ENUM_TYPE_CUBE_DEPTH);
-	Texture depthMap(FBO_DepthMap.GetDepthBufferID(), Texture::ENUM_TYPE_CUBE_MAP);
+	Texture depthMap(FBO_DepthMap.GetDepthTexture().GetID(), Texture::ENUM_TYPE_CUBE_MAP);
 
 
 	//------------ 输入

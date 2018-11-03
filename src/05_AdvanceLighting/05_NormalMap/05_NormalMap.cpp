@@ -111,6 +111,7 @@ int main(int argc, char ** argv) {
 	};
 	VAO VAO_Cube(cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
 
+
 	//------------ 模型 . imgShowCube
 	vector<VAO::VBO_DataPatch> imgShowCube_Vec_VBO_Data_Patch = {
 		{cube.GetVertexArr(), cube.GetVertexArrSize(), 3},
@@ -132,6 +133,9 @@ int main(int argc, char ** argv) {
 	normalMapShader.SetInt("normalMap", 1);
 	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
 	normalMapShader.SetVec3f("lightPos", lightPos);
+	bool normalMapEnable = true;
+	GStorage<bool *>::GetInstance()->Register("bool_ptr_normalMapEnable", &normalMapEnable);
+
 
 	//------------ ImgShow 着色器
 	string imgShow_vs = rootPath + str_ImgShow_vs;
@@ -143,6 +147,7 @@ int main(int argc, char ** argv) {
 	}
 	imgShowShader.SetInt("texture0", 0);
 	imgShowShader.UniformBlockBind("CameraMatrixs", 0);
+
 
 	//------------ 纹理
 	const int textureNum = 2;
@@ -158,6 +163,7 @@ int main(int argc, char ** argv) {
 			return 1;
 		}
 	}
+
 
 	//------------ 相机
 	float moveSpeed = *config->GetFloatPtr(config_CameraMoveSpeed);
@@ -177,6 +183,7 @@ int main(int argc, char ** argv) {
 	//------------ 输入
 	auto registerInputOp = new RegisterInput(false);
 	 
+
 	//------------- 时间
 	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 	GStorage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
@@ -186,6 +193,7 @@ int main(int argc, char ** argv) {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 	});
+
 
 	//------------ 更新相机
 	auto cameraMatrixsUBO_Update = new LambdaOp([&]() {
@@ -209,6 +217,7 @@ int main(int argc, char ** argv) {
 		// rotate the quad to show normal mapping from multiple directions
 		model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 		normalMapShader.SetMat4f("model", model);
+		normalMapShader.SetBool("normalMapEnable", normalMapEnable);
 		VAO_Quad.Use();
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -243,6 +252,7 @@ int main(int argc, char ** argv) {
 		glDrawElements(GL_TRIANGLES, cube.GetTriNum() * 3, GL_UNSIGNED_INT, NULL);
 	});
 
+
 	//------------ 渲染操作
 	auto renderOp = new OpNode([]() {//init
 		glEnable(GL_DEPTH_TEST);
@@ -255,6 +265,7 @@ int main(int argc, char ** argv) {
 
 	(*renderOp) << quadOp << lightOp << imgShowOp;
 	
+
 	//------------- 整合
 	auto opQueue = new OpQueue;
 	(*opQueue) << registerInputOp << updateOpQueue << renderOp;
@@ -267,4 +278,3 @@ int main(int argc, char ** argv) {
 	
 	return 0;
 }
-

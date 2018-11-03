@@ -1,4 +1,8 @@
+
+
 set(PROJECT_NAME "LearnOpenGL")
+
+
 #---------------------------------------
 macro(SETUP_PROJECT MODE TARGET_NAME STR_TARGET_SOURCES STR_TARGET_LIBS)
 	string(REPLACE " " ";" LIST_TARGET_SOURCES ${STR_TARGET_SOURCES})
@@ -9,7 +13,7 @@ macro(SETUP_PROJECT MODE TARGET_NAME STR_TARGET_SOURCES STR_TARGET_LIBS)
 	else()
 		if(${MODE} STREQUAL "EXE")
 			add_executable( ${TARGET_NAME} ${LIST_TARGET_SOURCES})
-			set(INSTALL_DIR "bin/${FOLDER_NAME}/${TARGET_NAME}")
+			set(INSTALL_DIR "bin/${FOLDER_NAME}")
 			install (TARGETS ${TARGET_NAME} DESTINATION ${INSTALL_DIR})
 		elseif(${MODE} STREQUAL "LIB")
 			add_library(${TARGET_NAME} ${LIST_TARGET_SOURCES})
@@ -119,8 +123,11 @@ set(IMAGES
 foreach(IMAGE ${IMAGES})
 	install(FILES "${CMAKE_SOURCE_DIR}/data/textures/${IMAGE}" DESTINATION data/textures)
 endforeach(IMAGE ${IMAGES})
+install(FILES "${CMAKE_SOURCE_DIR}/bin/assimp.dll" DESTINATION bin)
+install(FILES "${CMAKE_SOURCE_DIR}/run_all.bat" DESTINATION /)
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/objects/nanosuit" DESTINATION data/objects)
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/textures/skybox" DESTINATION data/textures/skybox)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/textures/skybox" DESTINATION data/textures)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/shaders/Common" DESTINATION data/shaders)
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")

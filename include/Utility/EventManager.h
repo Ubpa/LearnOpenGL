@@ -2,11 +2,12 @@
 #define _EVENT_MANAGER_H_
 
 #include <Utility/OpQueue.h>
+#include <Utility/Singleton.h>
 #include <functional>
 #include <map>
 
 namespace Ubpa {
-	class EventManager {
+	class EventManager : public Singleton<EventManager> {
 	public:
 		enum ENUM_EVENT {
 			//KEY = 0x00000000 ~ 0x0000FFFF
@@ -19,17 +20,16 @@ namespace Ubpa {
 			WINDOW_ZOOM = 0x00080002,
 		};
 		//------------
+		friend class Singleton<EventManager>;
 		static EventManager * GetInstance();
 		//------------
 		void Register(size_t event, Ptr<Operation> & op);
 		void Register(size_t event, Operation * op);
 		void Register(size_t event, const std::function<void()> & op);
 		void Response(size_t event);
-	private:
-		EventManager();
-		EventManager(const EventManager &);
-		EventManager & operator=(const EventManager &);
-		static EventManager * instance;
+	protected:
+		EventManager() = default;
+		~EventManager() = default;
 		//------------
 		std::map<size_t, Ptr<OpQueue> > directory;
 	};

@@ -12,7 +12,7 @@ namespace Define{
 	const size_t val_windowWidth = 1280;
 	const size_t val_windowHeight = 720;
 	const float val_RatioWH = (float)val_windowWidth / (float)val_windowHeight;
-	const float PI = 3.1415926;
+	const float PI = 3.1415926f;
 	
 	const std::string str_Img_Prefix = "/data/textures/";
 	const std::string str_Img_Container = str_Img_Prefix + "container.jpg";

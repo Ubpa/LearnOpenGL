@@ -737,7 +737,7 @@ int main(int argc, char ** argv) {
 		glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
 		glDisable(GL_STENCIL_TEST);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, FBO_Intermediate.GetColorBufferID());	// use the color offScreanColorBuffer texture as the texture of the quad plane
+		glBindTexture(GL_TEXTURE_2D, FBO_Intermediate.GetColorTexture().GetID());	// use the color offScreanColorBuffer texture as the texture of the quad plane
 		postProcessShader.Use();
 		glBindVertexArray(screanVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
