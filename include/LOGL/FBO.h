@@ -18,16 +18,21 @@ namespace LOGL {
 			ENUM_TYPE_COLOR_FLOAT,
 			ENUM_TYPE_DEPTH,
 			ENUM_TYPE_CUBE_DEPTH,
+			ENUM_TYPE_GBUFFER,
 		};
 		enum ENUM_PASS_TYPE {
-			ENUM_PASS_COLOR
+			ENUM_PASS_COLOR,
+			ENUM_PASS_DEPTH,
 		};
 
 		FBO(size_t width, size_t height, ENUM_TYPE type = ENUM_TYPE_BASIC);
 		
 		bool PassTo(const FBO & fbo, ENUM_PASS_TYPE passType = ENUM_PASS_COLOR) const;
+		bool PassTo(size_t fboID, size_t width, size_t height, ENUM_PASS_TYPE passType = ENUM_PASS_COLOR) const;
+
 		bool Use();
 		static void UseDefault();
+		static size_t DefaultBuffer;
 		size_t GetID() const;
 		const Texture & GetColorTexture(size_t idx = 0) const;
 		const Texture & GetDepthTexture() const;
@@ -39,8 +44,10 @@ namespace LOGL {
 		bool GenFBO_COLOR(size_t width, size_t height, bool isFloat = false);
 		bool GenFBO_DEPTH(size_t width, size_t height);
 		bool GenFBO_CUBE_DEPTH(size_t width, size_t height);
+		bool GenFBO_GBUFFER(size_t width, size_t height);
 
 		bool IsComplete() const;
+		static size_t PassType2GL(ENUM_PASS_TYPE passType);
 
 		FBO & operator=(const FBO & fbo) = delete;
 

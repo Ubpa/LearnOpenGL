@@ -163,7 +163,7 @@ vector<Mesh::TextureInfo> Model::LoadMaterialTextures(aiMaterial *mat, aiTexture
 		{   // if texture hasn't been loaded already, load it
 			Mesh::TextureInfo textureInfo;
 			string path = directory + "/" + str.C_Str();
-			auto tex = Texture(path.c_str());
+			Texture tex(path);
 			if (tex.IsValid() == false) {
 				printf("ERROR:Texture [%s] load fail.\n", path.c_str());
 				exit(1);

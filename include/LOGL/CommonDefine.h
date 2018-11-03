@@ -62,9 +62,13 @@ namespace Define{
 	const std::string str_Basic_P3_vs = str_ShadersCommon_Prefix + "basic_P3" + str_VsPostfix;
 
 	const std::string str_Basic_T2_fs = str_ShadersCommon_Prefix + "basic_T2" + str_FsPostfix;
+	const std::string str_Basic_fs = str_ShadersCommon_Prefix + "basic" + str_FsPostfix;
 
 	const std::string str_ImgShow_vs = str_Basic_P3T2_vs;
-	const std::string str_ImgShow_fs = str_ShadersCommon_Prefix + "basic_T2" + str_FsPostfix;
+	const std::string str_ImgShow_fs = str_Basic_T2_fs;
+
+	const std::string str_ColorShow_vs = str_Basic_P3_vs;
+	const std::string str_ColorShow_fs = str_Basic_fs;
 
 	const float data_ScreenVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
 		// positions   // texCoords

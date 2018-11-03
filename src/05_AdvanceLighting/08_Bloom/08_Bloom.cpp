@@ -38,21 +38,21 @@ int main(int argc, char ** argv) {
 	Cube cube;
 
 
-	//------------ 模型 . Cube
-	vector<VAO::VBO_DataPatch> cube_Vec_VBO_Data_Patch = {
+	//------------ 模型 . P3N3T2_Cube
+	vector<VAO::VBO_DataPatch> P3N3T2_Cube_Vec_VBO_Data_Patch = {
 		{cube.GetVertexArr(), cube.GetVertexArrSize(), 3},
 		{cube.GetNormalArr(), cube.GetNormalArrSize(), 3},
 		{cube.GetTexCoordsArr(), cube.GetTexCoordsArrSize(), 2},
 	};
-	VAO VAO_P3N3T2_Cube(cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
+	VAO VAO_P3N3T2_Cube(P3N3T2_Cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
 
 
-	//------------ 模型 . imgShowCube
-	vector<VAO::VBO_DataPatch> imgShowCube_Vec_VBO_Data_Patch = {
+	//------------ 模型 . P3T2_Cube
+	vector<VAO::VBO_DataPatch> P3T2_Cube_Vec_VBO_Data_Patch = {
 		{cube.GetVertexArr(), cube.GetVertexArrSize(), 3},
 		{cube.GetTexCoordsArr(), cube.GetTexCoordsArrSize(), 2},
 	};
-	VAO VAO_P3T2_Cube(imgShowCube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
+	VAO VAO_P3T2_Cube(P3T2_Cube_Vec_VBO_Data_Patch, cube.GetIndexArr(), cube.GetIndexArrSize());
 
 
 	//------------ 模型 . Screen

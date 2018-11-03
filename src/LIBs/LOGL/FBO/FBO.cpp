@@ -6,6 +6,8 @@
 using namespace LOGL;
 using namespace std;
 
+size_t FBO::DefaultBuffer = 0;
+
 FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 	: type(type), width(width), height(height) {
 	switch (type)
@@ -41,6 +43,10 @@ FBO::FBO(size_t width, size_t height, ENUM_TYPE type)
 		if (!GenFBO_CUBE_DEPTH(width, height))
 			printf("GenFBO_CUBE_DEPTH fail\n");
 		break;
+	case LOGL::FBO::ENUM_TYPE_GBUFFER:
+		if (!GenFBO_GBUFFER(width, height))
+			printf("GenFBO_GBUFFER fail\n");
+		break;
 	default:
 		printf("ERROR: FBO type not know\n");
 		isValid = false;
@@ -59,7 +65,6 @@ bool FBO::GenFBO_BASIC(size_t width, size_t height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);
-	colorTextures.push_back(Texture(colorBufferID,Texture::ENUM_TYPE_2D));
 
 	size_t RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -72,10 +77,10 @@ bool FBO::GenFBO_BASIC(size_t width, size_t height) {
 	isValid = IsComplete();
 	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
-		colorTextures.clear();
 		return false;
 	}
 
+	colorTextures.push_back(Texture(colorBufferID, Texture::ENUM_TYPE_2D));
 	return true;
 }
 
@@ -135,7 +140,6 @@ bool FBO::GenFBO_MSAA(size_t width, size_t height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, colorBufferID, 0);
-	colorTextures.push_back(Texture(colorBufferID));
 
 	size_t RBO;
 	glGenRenderbuffers(1, &RBO);
@@ -148,10 +152,10 @@ bool FBO::GenFBO_MSAA(size_t width, size_t height) {
 	isValid = IsComplete();
 	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
-		colorTextures.clear();
 		return false;
 	}
 
+	colorTextures.push_back(Texture(colorBufferID));
 	return true;
 }
 
@@ -168,17 +172,16 @@ bool FBO::GenFBO_COLOR(size_t width, size_t height, bool isFloat) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferID, 0);	// we only need a color buffer
-	colorTextures.push_back(Texture(colorBufferID));
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	isValid = IsComplete();
 	if (!isValid) {
 		printf("Framebuffer is not complete!\n");
-		colorTextures.clear();
 		return false;
 	}
 
+	colorTextures.push_back(Texture(colorBufferID));
 	return true;
 }
 
@@ -246,6 +249,60 @@ bool FBO::GenFBO_CUBE_DEPTH(size_t width, size_t height) {
 	return true;
 }
 
+bool FBO::GenFBO_GBUFFER(size_t width, size_t height) {
+	glGenFramebuffers(1, &ID);
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+	size_t gPosition, gNormal, gAlbedoSpec;
+
+	// position color buffer
+	glGenTextures(1, &gPosition);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+	// normal color buffer
+	glGenTextures(1, &gNormal);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+	// color + specular color buffer
+	glGenTextures(1, &gAlbedoSpec);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+	size_t attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	// create and attach depth buffer (renderbuffer)
+	size_t rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+	// finally check if framebuffer is complete
+	isValid = IsComplete();
+	if (!isValid) {
+		printf("Framebuffer is not complete!\n");
+		return false;
+	}
+
+	colorTextures.push_back(gPosition);
+	colorTextures.push_back(gNormal);
+	colorTextures.push_back(gAlbedoSpec);
+
+	return true;
+}
+
 
 size_t FBO::GetID() const {
 	if (!isValid)
@@ -274,15 +331,38 @@ bool FBO::IsComplete() const {
 	return true;
 }
 
+size_t FBO::PassType2GL(ENUM_PASS_TYPE passType) {
+	switch (passType)
+	{
+	case LOGL::FBO::ENUM_PASS_COLOR:
+		return GL_COLOR_BUFFER_BIT;
+		break;
+	case LOGL::FBO::ENUM_PASS_DEPTH:
+		return GL_DEPTH_BUFFER_BIT;
+		break;
+	default:
+		printf("Pass Type is unknown.\n");
+		return 0;
+		break;
+	}
+}
+
 bool FBO::PassTo(const FBO & fbo, ENUM_PASS_TYPE passType) const {
 	if (!isValid || !fbo.isValid)
 		return false;
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo.ID);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, fbo.width, fbo.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-	return true;
+	
+	return PassTo(fbo.ID, fbo.width, fbo.height, passType);
 }
 
+bool FBO::PassTo(size_t fboID, size_t width, size_t height, ENUM_PASS_TYPE passType) const {
+	if (!isValid)
+		return false;
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboID);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, PassType2GL(passType), GL_NEAREST);
+	return true;
+}
 
 const Texture & FBO::GetColorTexture(size_t idx) const {
 	if (!isValid || idx > colorTextures.size())
@@ -294,7 +374,8 @@ const Texture & FBO::GetColorTexture(size_t idx) const {
 		&& type != ENUM_TYPE_COLOR_FLOAT
 		&& type != ENUM_TYPE_RGBF1_DEPTH
 		&& type != ENUM_TYPE_RGBF2_DEPTH
-		&& type != ENUM_TYPE_RGBF3_DEPTH)
+		&& type != ENUM_TYPE_RGBF3_DEPTH
+		&& type != ENUM_TYPE_GBUFFER)
 		return Texture::InValid;
 
 	return colorTextures[idx];
@@ -320,5 +401,5 @@ bool FBO::Use() {
 }
 
 void FBO::UseDefault() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, DefaultBuffer);
 }

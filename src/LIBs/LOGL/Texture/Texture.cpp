@@ -14,10 +14,12 @@ Texture::Texture(size_t ID, ENUM_TYPE type) : ID(ID){
 }
 
 Texture::Texture(const std::string & path, bool flip, bool gammaCorrection){
+	type = ENUM_TYPE_NOT_VALID;
 	Load(path, flip, gammaCorrection);
 }
 
 Texture::Texture(const vector<string> & skybox) {
+	type = ENUM_TYPE_NOT_VALID;
 	Load(skybox);
 }
 
@@ -32,6 +34,7 @@ bool Texture::IsValid() const{
 bool Texture::Load(const std::vector<std::string> & skybox) {
 	if (IsValid()) {
 		printf("ERROR: The texture is valid already.\n");
+		
 		return false;
 	}
 
