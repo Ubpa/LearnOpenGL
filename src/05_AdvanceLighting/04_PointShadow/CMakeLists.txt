@@ -1,6 +1,6 @@
 #默认使用目录名作为项目名
 GET_DIR_NAME(DIRNAME)
-set(TARGET_NAME ${DIRNAME})
+set(TARGET_NAME "${TARGET_PREFIX}${DIRNAME}")
 #多个源文件用 [空格] 分隔
 #如：set(STR_TARGET_SOURCES "main.cpp src_2.cpp")
 file(GLOB ALL_SOURCES

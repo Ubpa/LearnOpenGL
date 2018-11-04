@@ -1,5 +1,6 @@
 #生成 exe 就 "EXE"，生成 lib 就 "LIB"
 set(MODE "EXE")
+set(TARGET_PREFIX "02_")
 
 GET_DIR_NAME(DIRNAME)
 set(FOLDER_NAME ${DIRNAME})
