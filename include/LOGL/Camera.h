@@ -1,9 +1,7 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace LOGL {
 	// An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL

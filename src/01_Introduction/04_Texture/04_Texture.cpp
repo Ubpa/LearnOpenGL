@@ -3,6 +3,7 @@
 #include <GLFW/Glfw.h>
 
 #include <LOGL/Shader.h>
+#include <LOGL/Texture.h>
 
 #include <Utility/Image.h>
 #include <Utility/InfoLambdaOp.h>
@@ -72,52 +73,44 @@ int main(int argc, char ** argv) {
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
-	//------------
-	size_t texture[2];
-	glGenTextures(2, texture);
-	string imgName[2] = {
+	//------------ 纹理
+	string imgPath[3] = {
 		rootPath + "/data/textures/container.jpg",
-		rootPath + "/data/textures/awesomeface.png"
+		rootPath + "/data/textures/awesomeface.png",
+		rootPath + "/data/textures/awesomeface.png",
 	};
-	Image img[2];
-	GLenum mode[2] = { GL_RGB, GL_RGBA };
-	bool flip[2] = { false, true };
-	//-------------
-	for (size_t i = 0; i < 2; i++) {
-		glBindTexture(GL_TEXTURE_2D, texture[i]);
-		// 为当前绑定的纹理对象设置环绕、过滤方式
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		img[i].Load(imgName[i].c_str(), flip[i]);
-		if (!img[i].IsValid()) {
-			cout << "Failed to load texture[" << imgName[i] << "]\n";
-			return 1;
-		}
-		/*
-		@1 纹理目标
-		@2 多级渐远纹理的级别 （0 为基本级别)
-		@3 纹理格式
-		@4 width
-		@5 height
-		@6 0 (历史遗留问题)
-		@7 源图格式
-		@8 源图类型
-		@9 图像数据
-		*/
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img[i].GetWidth(), img[i].GetHeight(), 0, mode[i], GL_UNSIGNED_BYTE, img[i].GetData());
-		// 为当前绑定的纹理自动生成所有需要的多级渐远纹理。
-		glGenerateMipmap(GL_TEXTURE_2D);
-		img[i].Free();
+	bool flip[3] = { false, true, false };
+
+	Texture texture0;
+	if (!texture0.Load(imgPath[0], flip[0])) {
+		printf("ERROR: Load texture [%s] fail.\n", imgPath[0].c_str());
+		return 1;
 	}
+
+	Texture texture1(Texture::ENUM_TYPE_2D_DYNAMIC);
+	Image texture1Imgs[3];
+	texture1Imgs[0].Load(imgPath[1].c_str(), flip[1]);
+	texture1Imgs[1].Load(imgPath[2].c_str(), flip[2]);
+	const size_t imgW = 256, imgH = 192, imgC = 4;
+	texture1Imgs[2].GenBuffer(imgW, imgH, imgC);
+	for (size_t i = 0; i < imgW; i++) {
+		for (size_t j = 0; j < imgH; j++) {
+			float r = i / (float)imgW;
+			float g = j / (float)imgH;
+			float b = 2 / (1 / r + 1 / g);
+			float a = (r + g + b) / 3;
+			texture1Imgs[2].SetPixel(i, j, Image::Pixel<float>(r, g, b, a));
+		}
+	}
+	texture1.SetImg(texture1Imgs[0]);
+	
 	//------------
 	string prefix = rootPath + "/data/shaders/" + chapter + "/" + subchapter + "/";
 	string vsF = prefix + subchapter + ".vs";
 	string fsF = prefix + subchapter + ".fs";
 	Shader shader(vsF.c_str(), fsF.c_str());
 	if (!shader.IsValid()) {
-		cout << "Shader is not Valid\n";
+		std::cout << "Shader is not Valid\n";
 		return 1;
 	}
 	//------------
@@ -126,17 +119,39 @@ int main(int argc, char ** argv) {
 	shader.SetInt("texture1", 1);
 	//------------
 	
-	auto registerInputOp = new RegisterInput(texture[1], false);
+	auto registerInputOp = new RegisterInput(texture1.GetID(), false);
 	
+	//------------- 时间
+	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+	GStorage<float *>::GetInstance()->Register("deltaTime", &deltaTime);
+	float lastFrame = 0.0f; // 上一帧的时间
+	auto timeUpdate = new LambdaOp([&]() {
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+	});
+
+	auto updateTex1Op = new LambdaOp([&]() {
+		static int second = 0;
+		if (lastFrame - second < 1)
+			return;
+
+		second++;
+		texture1.SetImg(texture1Imgs[second % 3]);
+	});
+
+	auto updateOp = new OpQueue;
+	(*updateOp) << timeUpdate << updateTex1Op;
+
 	//-------------
 	auto renderOp = new LambdaOp([&]() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//------------ 
 		glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
-		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glBindTexture(GL_TEXTURE_2D, texture0.GetID());
 		glActiveTexture(GL_TEXTURE1); // 在绑定纹理之前先激活纹理单元
-		glBindTexture(GL_TEXTURE_2D, texture[1]);
+		glBindTexture(GL_TEXTURE_2D, texture1.GetID());
 		//------------
 		shader.Use();
 		glBindVertexArray(VAO);
@@ -153,7 +168,7 @@ int main(int argc, char ** argv) {
 	//-------------
 	//OpQueue opQueue(); <--- 编译器会以为声明了一个函数
 	auto opQueue = new OpQueue;
-	(*opQueue) << registerInputOp << renderOp << endOp;
+	(*opQueue) << registerInputOp << updateOp << renderOp << endOp;
 	//------------
 	Glfw::GetInstance()->Run(opQueue);
 	//------------
@@ -221,7 +236,7 @@ void RegisterInput::Run() {
 
 	//------------
 
-	cout << endl
+	std::cout << endl
 		<< "* 1. Press '1' to set PolygonMode[FILL]" << endl
 		<< "* 2. Press '2' to set PolygonMode[LINE]" << endl
 		<< "* 3. Press '3' to set TEXTURE_WRAP[REPEAT]" << endl
