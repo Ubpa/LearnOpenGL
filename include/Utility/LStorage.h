@@ -16,7 +16,9 @@ namespace Ubpa {
 
 		T * GetPtr(const std::string & uniqueID);
 
+		bool Register(const std::string & uniqueID);
 	private:
+
 		std::map<std::string, T> directory;
 	};
 
@@ -50,6 +52,16 @@ namespace Ubpa {
 			return NULL;
 
 		return &(target->second);
+	}
+
+	template<typename T>
+	bool LStorage<T>::Register(const std::string & uniqueID) {
+		auto target = directory.find(uniqueID);
+		if (target != directory.end())
+			return false;
+
+		directory[uniqueID] = new decltype(*T);
+		return true;
 	}
 }
 

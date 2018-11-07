@@ -5,6 +5,7 @@
 #include <Utility/Config.h>
 #include <Utility/Cube.h>
 #include <Utility/OpNode.h>
+#include <Utility/Timer.h>
 
 #include <LOGL/Camera.h>
 #include <LOGL/Texture.h>
@@ -212,12 +213,11 @@ int main(int argc, char ** argv) {
 	// 更新
 
 	float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+	Timer mainTimer;
+	mainTimer.Start();
 	GStorage<float *>::GetInstance()->Register(str_DeltaTime.c_str(), &deltaTime);
-	float lastFrame = 0.0f; // 上一帧的时间
 	auto timeUpdate = new LambdaOp([&]() {
-		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		deltaTime = mainTimer.Log();
 	});
 
 	auto cameraMatrixsUBO_Update = new LambdaOp([&]() {

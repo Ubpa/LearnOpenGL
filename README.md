@@ -82,6 +82,7 @@
     -Image
     -Operation: Operation, LambdaOp, InfoLambdaOp, OpQueue
     -Shape: Shape, Cube, Sphere
+    -Timer
 ```
 
 # 2. 使用方法
