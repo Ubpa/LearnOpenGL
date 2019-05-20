@@ -5,9 +5,11 @@ layout (location = 2) in vec2 aTexCoords;
 
 uniform mat4 model;
 
-layout (std140) uniform CameraMatrixs{
-	mat4 view;
-	mat4 projection;
+// 144
+layout (std140) uniform Camera{
+	mat4 view;			// 64	0
+	mat4 projection;	// 64	64
+	vec3 viewPos;		// 12	128
 };
 
 out vec3 Normal;
